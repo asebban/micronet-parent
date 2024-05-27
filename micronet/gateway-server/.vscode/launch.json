@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "ma.micronet.gateway.server.GatewayApplication",
+            "console": "integratedTerminal"
+        }
+    ]
+}
