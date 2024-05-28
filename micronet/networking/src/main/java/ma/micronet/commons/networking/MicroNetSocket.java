@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import java.util.Random;
 
 public class MicroNetSocket {
 
@@ -122,41 +123,67 @@ public class MicroNetSocket {
             throw new MicroNetException("No adressable found for type " + this.type + " and path " + m.getPath());
         }
 
-        logger.debug("MicroNetSocket.send: List of adressables found for type " + this.type);
+        int adressablesSize = adressables.size();
+        // generate a random number between 0 and adressablesSize-1
+        int idx = generateRandomNumber(adressablesSize);
 
-        Adressable adressable = getNextAdressable(adressables);
+        logger.debug("MicroNetSocket.send: List of "+ adressablesSize + " adressables found for type " + this.type);
+
+        Adressable adressable = getNextAdressable(adressables, idx);
 
         boolean isAdressableReachable = false;
 
-        while (!isAdressableReachable) {
+        while (!isAdressableReachable && adressablesSize > 0) {
             try {
+                if (adressable == null) {
+                    logger.error("MicroNetSocket.send: Could not find a reachable adressable");
+                    throw new MicroNetException("MicroNetSocket.send: Could not find a reachable adressable");
+                }
                 logger.debug("MicroNetSocket.send: Trying to reach " + adressable);
                 this.socket = new Socket(adressable.getHost(), adressable.getPort().intValue());
+                logger.debug("MicroNetSocket.send: Reached " + adressable);
                 isAdressableReachable = true;
             } catch (UnknownHostException e) {
-                logger.debug(adressable + " is not reachable");
-                adressable = getNextAdressable(adressables);
+                logger.debug(adressable + " is not reachable because of an unknown host exception");
+                adressablesSize--;
+                idx = (idx+1)%adressables.size();
+                adressable = getNextAdressable(adressables, idx);
             } catch (IOException e) {
-                adressable = getNextAdressable(adressables);
+                logger.debug(adressable + " is not reachable because of an IO exception");
+                adressablesSize--;
+                idx = (idx+1)%adressables.size();
+                adressable = getNextAdressable(adressables, idx);
             }
         }
         
+        if (adressablesSize <= 0) {
+            logger.error("MicroNetSocket.send: No reachable adressable found for type " + this.type);
+            throw new MicroNetException("No reachable adressable found for type " + this.type);
+        }
+
+        logger.debug("MicroNetSocket.send: Sending data to " + adressable);
         OutputStream outputStream = this.socket.getOutputStream();
         byte[] bytes = data.getBytes();
         outputStream.write(bytes);
         outputStream.flush();
+        logger.debug("MicroNetSocket.send: Data sent to " + adressable);
     }
 
+    public static int generateRandomNumber(int n) {
+        Random random = new Random();
+        return random.nextInt(n);
+    }
+    
     public String recv(int bufsize) throws IOException {
         // Ajoutez ici toute fonctionnalité personnalisée nécessaire avant la réception
         byte[] buffer = new byte[bufsize];
         InputStream inputStream = this.socket.getInputStream();
         int bytesRead = inputStream.read(buffer);
-        if (bytesRead == -1) {
+        if (bytesRead == 0 || bytesRead == -1) {
             throw new IOException("End of stream reached");
         }
         byte[] receivedData = new byte[bytesRead];
-        //System.arraycopy(buffer, 0, receivedData, 0, bytesRead);
+        System.arraycopy(buffer, 0, receivedData, 0, bytesRead);
         return new String(receivedData, StandardCharsets.UTF_8);
     }
 
@@ -164,18 +191,15 @@ public class MicroNetSocket {
         this.socket.close();
     }
 
-    private Adressable getNextAdressable(List<Adressable> adressables) throws MicroNetException {
+    private Adressable getNextAdressable(List<Adressable> adressables, int idx) {
 
         if (adressables == null || adressables.size() == 0) {
-            throw new MicroNetException("No adressable found for type " + this.type);
+            return null;
         }
-
-        int randomIndex = generateRandomNumber(0, adressables.size() - 1);
-        return adressables.get(randomIndex);
-    }
-
-    private int generateRandomNumber(int min, int max) {
-        return (int) (Math.random() * (max - min + 1) + min);
+        if (idx >= adressables.size() || idx < 0) {
+            return null;
+        }
+        return adressables.get(idx);
     }
 
     List<Adressable> getTargetAddressableList(Message message) throws MicroNetException {
@@ -184,12 +208,12 @@ public class MicroNetSocket {
             throw new MicroNetException("MicroNetSocket: Target agent list undefinable because the message is null");
         }
 
-        if (message.getTargetType() == null) {
+        if (this.type == null) {
             throw new MicroNetException("MicroNetSocket: Target agent list undefinable because the message Receiver type is unknown");
         }
 
-        if (!AGENT_TYPE.equalsIgnoreCase(message.getTargetType())) {
-            return MicroNetMapRenewer.getInstance().getMap().get(message.getTargetType());
+        if (!AGENT_TYPE.equalsIgnoreCase(this.type)) {
+            return MicroNetMapRenewer.getInstance().getMap().get(this.type);
         }
 
         Map<String, List<Adressable>> pathMap = MicroNetMapRenewer.getInstance().getAgentsMap();

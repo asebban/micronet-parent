@@ -1,6 +1,0 @@
-ma\micronet\agent\api\Agent.class
-ma\micronet\agent\api\AgentProcessorFactory.class
-ma\micronet\agent\api\AgentConnection.class
-ma\micronet\agent\api\AgentFactory.class
-ma\micronet\agent\api\IAgentProcessor.class
-ma\micronet\agent\api\AgentProcessor.class

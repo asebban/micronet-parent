@@ -77,7 +77,6 @@ public class HttpGateway {
             m.setSenderAdressable(httpGateway);
             m.setSenderType(HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
-            m.setTargetType(AGENT_TYPE);
             m.setCommand(Message.GET);
 
             req.queryMap().toMap().forEach((key, value) -> {
@@ -91,9 +90,7 @@ public class HttpGateway {
             // Translate the response to String with Gson and return it
 
             // Assuming 'response' is your object
-            Gson gson = new Gson();
-            String jsonString = gson.toJson(response);
-            return jsonString;
+            return response.getPayLoad();
 
         });
 
@@ -131,9 +128,7 @@ public class HttpGateway {
             logger.debug("Http Gateway: Received a response from the raw gateway: " + response.toString());
 
             // Assuming 'response' is your object
-            Gson gson = new Gson();
-            String jsonString = gson.toJson(response);
-            return jsonString;
+            return response.getPayLoad();
             
         });
 
@@ -171,9 +166,7 @@ public class HttpGateway {
             Message response = gatewayConnection.sendSync(m);
             logger.debug("Http Gateway: Received a response from the raw gateway: " + response.toString());
 
-            Gson gson = new Gson();
-            String jsonString = gson.toJson(response);
-            return jsonString;
+            return response.getPayLoad();
         });
 
         delete("/*", (req, res) -> {
@@ -210,9 +203,7 @@ public class HttpGateway {
             Message response = gatewayConnection.sendSync(m);
             logger.debug("Http Gateway: Received a response from the raw gateway: " + response.toString());
 
-            Gson gson = new Gson();
-            String jsonString = gson.toJson(response);
-            return jsonString;
+            return response.getPayLoad();
         });
 
         exception(Exception.class, (exception, request, response) -> {

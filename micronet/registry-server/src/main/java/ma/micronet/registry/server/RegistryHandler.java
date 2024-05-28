@@ -41,7 +41,9 @@ public class RegistryHandler implements Runnable {
             Message response = process(message);
             
             OutputStream os = this.socket.getOutputStream();
-            os.write(gson.toJson(response).getBytes());
+            String responseJson = gson.toJson(response);
+            logger.debug("RegistryHandler: Sending response: " + responseJson);
+            os.write(responseJson.getBytes());
             os.flush();
         } catch (IOException e) {
             logger.error("RegistryHandler: Error getting input stream: " + e.getMessage());

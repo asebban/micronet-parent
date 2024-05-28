@@ -34,6 +34,7 @@ public class RouterProcessor implements Runnable {
             is.read(buffer);
             logger.debug("Router Processor: Request read successfully");
             String request = new String(buffer, "UTF-8");
+            request = request.trim();
             String response = processRequest(request);
             OutputStream os = this.socket.getOutputStream();
             os.write(response.getBytes());
@@ -61,11 +62,6 @@ public class RouterProcessor implements Runnable {
 
     private Message route(Message message) throws MicroNetException, IOException {
         // Route the request
-        if (!message.getTargetType().equalsIgnoreCase(Agent.AGENT_TYPE)) {
-            logger.error("Router Processor: Invalid target type " + message.getTargetType() + ". Expected " + Agent.AGENT_TYPE + " type.");
-            throw new IllegalArgumentException("Router: Invalid target type");
-        }
-
         logger.debug("Router Processor: Creating a new agent connection");
         AgentConnection agentConnection = AgentFactory.createConnection();
         agentConnection.connect();

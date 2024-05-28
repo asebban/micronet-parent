@@ -2,7 +2,6 @@ package ma.micronet.example;
 
 import java.io.IOException;
 
-import ma.micronet.agent.api.Agent;
 import ma.micronet.agent.api.AgentProcessor;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;

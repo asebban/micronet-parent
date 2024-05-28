@@ -29,6 +29,7 @@ public class AgentHandler implements Runnable {
             byte[] buffer = new byte[1024];
             is.read(buffer);
             String request = new String(buffer, "UTF-8");
+            request = request.trim();
             logger.debug("Agent Handler ID " + processor.getAgent().getId() + ": Received request: " + request);
             Gson gson = new Gson();
             Message message = gson.fromJson(request, Message.class);
@@ -38,6 +39,12 @@ public class AgentHandler implements Runnable {
             this.socket.getOutputStream().write(responseString.getBytes());
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        } finally {
+            try {
+                this.socket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }   
     }
 }

@@ -39,8 +39,9 @@ public class GatewayClientHandler implements Runnable{
             InputStream is = this.incomingSocket.getInputStream();
             byte[] buffer = new byte[1024];
             is.read(buffer);
-            logger.debug("GatewayClientHandler: Received a message from the client");
             String request = new String(buffer, "UTF-8");
+            logger.debug("GatewayClientHandler: Received a message from the client :'" + request + "'");
+            request = request.trim();
             Gson gson = new Gson();
             Message message = gson.fromJson(request, Message.class);
 

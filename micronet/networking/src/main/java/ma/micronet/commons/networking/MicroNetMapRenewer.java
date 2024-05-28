@@ -47,7 +47,6 @@ public class MicroNetMapRenewer {
         executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
             try {
-                logger.debug("MapRenewer: Refreshing the registry map");
                 renewMap();
             } catch (MicroNetException | IOException e) {
                 e.printStackTrace();
@@ -79,7 +78,6 @@ public class MicroNetMapRenewer {
         Gson gson = new Gson();
         // convert the message to a JSON string using Gson
         String json = gson.toJson(m);
-        logger.debug("MapRenewer: Sending request to the Registry: " + json);
 
         try {
             registrySocket = new Socket(host, port); // Connect to the Registry
@@ -96,7 +94,6 @@ public class MicroNetMapRenewer {
         try {
             os.write(toSend); // Send the message to the Registry
             os.flush();
-            logger.debug("MapRenewer: Request sent to the Registry");
         } catch (IOException e) {
             logger.error("MapRenewer: Error while sending the request to the Registry");
             e.printStackTrace();
@@ -109,7 +106,6 @@ public class MicroNetMapRenewer {
         int bytesRead;
         try {
             bytesRead = is.read(buffer);
-            logger.debug("MapRenewer: Response received from the Registry");
         } catch (IOException e) {
             logger.error("MapRenewer: Error while reading the response from the Registry");
             e.printStackTrace();
@@ -119,7 +115,7 @@ public class MicroNetMapRenewer {
 
         if (buffer == null || bytesRead == -1) {
             registrySocket.close();
-            logger.debug("MapRenewer: No response from the Registry");
+            logger.error("MapRenewer: No response from the Registry");
             throw new MicroNetException("No response from the Registry");
         }
 
@@ -129,7 +125,6 @@ public class MicroNetMapRenewer {
         try {
             RegistryMessage registryMessage = gson.fromJson(response, RegistryMessage.class);
             String payLoad = registryMessage.getPayLoad();
-            logger.debug("MapRenewer: Response received from the Registry: " + payLoad);
             Type mapType = new TypeToken<Map<String, List<Adressable>>>() {}.getType();
             this.map = gson.fromJson(payLoad, mapType);
         } catch (JsonSyntaxException e) {
