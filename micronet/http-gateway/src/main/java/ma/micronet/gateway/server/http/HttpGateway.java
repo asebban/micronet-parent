@@ -8,8 +8,6 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import ma.micronet.commons.Adressable;
 import ma.micronet.commons.Config;
 import ma.micronet.commons.ConfigReader;
