@@ -28,6 +28,7 @@ public class AgentProcessorFactory {
         throw new MicroNetException("No processor found!");
     }
 
+    @SuppressWarnings("deprecation")
     public static List<IProcessingUnit> findProcessingUnits() throws MicroNetException {
         
         Reflections reflections = new Reflections("ma.micronet");
