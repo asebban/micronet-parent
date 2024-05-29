@@ -33,7 +33,4 @@ public class AgentFactory {
         return agent;
     }
 
-    public static AgentConnection createConnection() {
-            return new AgentConnection();    
-    }
 }

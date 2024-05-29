@@ -14,11 +14,7 @@ public class MyAgent extends AgentProcessor{
 
     @Override
     public Message process(Message request) throws MicroNetException {
-        Message response = new Message();
-        response.setResponseCode("OK");
-        response.setDirection(Message.RESPONSE);
-        response.setPayLoad("Hello from MyAgent");
-        response.setSenderAdressable(this.getAgent());
+        Message response = okResponseMessage("This is MyAgent response");
         return response;
     }
 

@@ -24,4 +24,22 @@ public abstract class AgentProcessor implements IAgentProcessor{
         return this.agent;
     }
 
+    public Message okResponseMessage(String payload) {
+        Message response = new Message();
+        response.setResponseCode(Message.OK);
+        response.setDirection(Message.RESPONSE);
+        response.setPayLoad(payload);
+        response.setSenderAdressable(this.getAgent());
+        return response;
+    }
+
+    public Message nokResponseMessage(String payload) {
+        Message response = new Message();
+        response.setResponseCode(Message.NOK);
+        response.setDirection(Message.RESPONSE);
+        response.setPayLoad(payload);
+        response.setSenderAdressable(this.getAgent());
+        return response;
+    }
+
 }

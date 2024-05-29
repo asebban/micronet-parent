@@ -13,6 +13,7 @@ public class Message {
     public static final String UPDATE = "UPDATE";
     public static final String GET = "GET";
     public static final String OK = "OK";
+    public static final String NOK = "NOK";
     public static final String ERROR = "ERROR";
 
     private String path;

@@ -35,14 +35,16 @@ public class MicroNetMapRenewer {
     private static MicroNetMapRenewer instance;
     private ScheduledExecutorService executor;
     private Logger logger = LoggerFactory.getLogger(MicroNetMapRenewer.class);
+    private Adressable adressable;
     public static final String AGENT_TYPE = "AGENT";
     public static final String MAP_RENEWER_TYPE = "MAP_RENEWER";
 
-    private MicroNetMapRenewer() {
+    private MicroNetMapRenewer(Adressable adressable) {
 
         this.map = new HashMap<>();
+        this.adressable = adressable;
 
-        long frequency = Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 30;
+        long frequency = Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 3;
 
         executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
@@ -51,13 +53,13 @@ public class MicroNetMapRenewer {
             } catch (MicroNetException | IOException e) {
                 e.printStackTrace();
             }
-        }, 10, frequency, TimeUnit.SECONDS);
+        }, frequency, frequency, TimeUnit.SECONDS);
 
     }
 
-    public static MicroNetMapRenewer getInstance() {
+    public static MicroNetMapRenewer getInstance(Adressable adressable) {
         if (instance == null) {
-            instance = new MicroNetMapRenewer();
+            instance = new MicroNetMapRenewer(adressable);
         }
         return instance;
     }
@@ -74,7 +76,7 @@ public class MicroNetMapRenewer {
             throw new MicroNetException("Registry host or port not set in the configuration file"); // Throw a MicroNetException if the host or port is not set
         }
 
-        RegistryMessage m = Registry.createGetMapRegistryRequest(MAP_RENEWER_TYPE);
+        RegistryMessage m = Registry.createGetMapRegistryRequest(MAP_RENEWER_TYPE, this.adressable);
         Gson gson = new Gson();
         // convert the message to a JSON string using Gson
         String json = gson.toJson(m);

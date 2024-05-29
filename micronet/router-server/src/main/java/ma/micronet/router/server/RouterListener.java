@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.router.api.Router;
 import ma.micronet.router.api.RouterFactory;
@@ -29,6 +30,7 @@ public class RouterListener implements IListener {
             logger.debug("Router Listener: Subscribing the router to the registry");
             Registry.subscribe(router);
             logger.debug("Router Listener: Router subscribed successfully to the registry");
+            MicroNetMapRenewer.getInstance(router).renewMap();
         } catch (MicroNetException e) {
             logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
             e.printStackTrace();

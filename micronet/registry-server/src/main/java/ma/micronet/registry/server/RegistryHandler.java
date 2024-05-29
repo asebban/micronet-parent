@@ -62,22 +62,33 @@ public class RegistryHandler implements Runnable {
     public Message process(Message message) {
         Message response = null;
 
+        Adressable sender = message.getSenderAdressable();
+        if (sender != null) {
+            logger.debug("RegistryHandler: Updating last seen for " + sender + " at " + System.currentTimeMillis());
+            RegistryMapController.getInstance().updateLastSeen(sender);
+        }
+        else {
+            logger.debug("RegistryHandler: No sender adressable in message (sender is null)");
+        }
+
+        //RegistryMapController.getInstance().cleanRegistryMap();
+        
         logger.debug("RegistryHandler: Processing message: " + message.toString());
         switch(message.getCommand()) {
             case Registry.SUBSCRIBE_COMMAND:
-                logger.info("RegistryHandler: Subscribing service");
+                logger.info("RegistryHandler: Subscribing service " + (sender != null ? sender : ""));
                 response = subscribe(message);
                 break;
             case Registry.UNSUBSCRIBE_COMMAND:
-                logger.info("RegistryHandler: Unsubscribing service");
+                logger.info("RegistryHandler: Unsubscribing service " + (sender != null ? sender : ""));
                 response = unsubscribe(message);
                 break;
             case Registry.REGISTRY_GETMAP:
-                logger.info("RegistryHandler: Answering getMap command");
+                logger.info("RegistryHandler: Answering getMap command for service " + (sender != null ? sender : ""));
                 response = getMap(message);
                 break;
             default:
-                logger.error("RegistryHandler: Unknown command: " + message.getCommand());
+                logger.error("RegistryHandler: Unknown command: " + message.getCommand() + " from service " + (sender != null ? sender : ""));
                 response = createErrorMessage(message, "Unknown command: " + message.getCommand());
                 break;
         }
@@ -102,6 +113,12 @@ public class RegistryHandler implements Runnable {
     }
 
     public Message getMap(Message request) {
+        Adressable sender = request.getSenderAdressable();
+        
+        if (sender != null) {
+            RegistryMapController.getInstance().updateLastSeen(sender);
+        }
+
         Map<String, List<Adressable>> registryMap = RegistryMapController.getInstance().getRegistryMap();
         Message response = createGetMapMessage(request, registryMap);
         return response;

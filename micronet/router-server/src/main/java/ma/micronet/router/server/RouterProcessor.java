@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import ma.micronet.agent.api.Agent;
 import ma.micronet.agent.api.AgentConnection;
 import ma.micronet.agent.api.AgentFactory;
 import ma.micronet.commons.Message;
@@ -62,7 +63,9 @@ public class RouterProcessor implements Runnable {
     private Message route(Message message) throws MicroNetException, IOException {
         // Route the request
         logger.debug("Router Processor: Creating a new agent connection");
-        AgentConnection agentConnection = AgentFactory.createConnection();
+        Agent agent = new Agent();
+        agent.setPath(message.getPath());
+        AgentConnection agentConnection = agent.createConnection();
         agentConnection.connect();
         logger.debug("Router Processor: Sending the request to the agent");
         Message response = agentConnection.sendSync(message);

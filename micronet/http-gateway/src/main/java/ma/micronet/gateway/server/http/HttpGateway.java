@@ -15,8 +15,8 @@ import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.PortGenerator;
 import ma.micronet.commons.UIDGenerator;
+import ma.micronet.gateway.api.Gateway;
 import ma.micronet.gateway.api.GatewayConnection;
-import ma.micronet.gateway.api.GatewayFactory;
 import sun.misc.SignalHandler;
 import sun.misc.Signal;
 
@@ -57,7 +57,8 @@ public class HttpGateway {
         get("/*", (req, res) -> {
     
             logger.debug("Http Gateway: Received a GET request");
-            GatewayConnection gatewayConnection = GatewayFactory.createConnection();
+            Gateway gateway = new Gateway();
+            GatewayConnection gatewayConnection = gateway.createConnection();
             logger.debug("Http Gateway: Created a connection to the raw  gateway");
             try {
                 logger.debug("Http Gateway: Connecting to the raw gateway");
@@ -95,7 +96,8 @@ public class HttpGateway {
         post("/*", (req, res) -> {
 
             logger.debug("Http Gateway: Received a GET request");
-            GatewayConnection gatewayConnection = GatewayFactory.createConnection();
+            Gateway gateway = new Gateway();
+            GatewayConnection gatewayConnection = gateway.createConnection();
             logger.debug("Http Gateway: Created a connection to the raw  gateway");
 
             try {
@@ -133,7 +135,8 @@ public class HttpGateway {
         put("/*", (req, res) -> {
 
             logger.debug("Http Gateway: Received a GET request");
-            GatewayConnection gatewayConnection = GatewayFactory.createConnection();
+            Gateway gateway = new Gateway();
+            GatewayConnection gatewayConnection = gateway.createConnection();
             logger.debug("Http Gateway: Created a connection to the raw  gateway");
 
             try {
@@ -170,7 +173,8 @@ public class HttpGateway {
         delete("/*", (req, res) -> {
 
             logger.debug("Http Gateway: Received a GET request");
-            GatewayConnection gatewayConnection = GatewayFactory.createConnection();
+            Gateway gateway = new Gateway();
+            GatewayConnection gatewayConnection = gateway.createConnection();
             logger.debug("Http Gateway: Created a connection to the raw  gateway");
 
             try {

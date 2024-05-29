@@ -11,6 +11,7 @@ import ma.micronet.agent.api.AgentProcessor;
 import ma.micronet.agent.api.AgentProcessorFactory;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.PingListener;
+import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.registry.api.Registry;
 import sun.misc.SignalHandler;
 import sun.misc.Signal;
@@ -45,7 +46,8 @@ public class AgentListener {
 
             // Register the agent to the registry
             logger.info("Server is listening on port " + processor.getAgent().getPort());
-
+            MicroNetMapRenewer.getInstance(processor.getAgent()).renewMap();
+            
             while (true) {
                 Socket socket = serverSocket.accept();
                 logger.info("AgentListener: New connection from " + socket.getInetAddress().getHostAddress());

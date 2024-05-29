@@ -8,23 +8,19 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import ma.micronet.commons.Adressable;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 
 public abstract class Connection {
-    private String ip;
-    private int port;
     private MicroNetSocket socket;
     private Logger logger = LoggerFactory.getLogger(Connection.class.getName());
+    private Adressable adressable;
 
-    public Connection(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
+    public Connection(Adressable adressable) throws MicroNetException, IOException {
+        this.adressable = adressable;
+        this.socket = new MicroNetSocket(adressable);
     }
-
-    public Connection() {
-    }
-
     
     public MicroNetSocket getSocket() {
         return socket;
@@ -93,11 +89,28 @@ public abstract class Connection {
 
 
     public String getIp() {
-        return ip;
+        return this.adressable.getHost();
     }
 
     public int getPort() {
-        return port;
+        return this.adressable.getPort();
+    }
+
+    public void close() throws MicroNetException {
+        try {
+            this.socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new MicroNetException("Error closing connection", e);
+        }
+    }
+
+    public Adressable getAdressable() {
+        return adressable;
+    }
+
+    public void setAdressable(Adressable adressable) {
+        this.adressable = adressable;
     }
 
 }

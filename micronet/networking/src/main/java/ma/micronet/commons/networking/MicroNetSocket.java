@@ -31,6 +31,7 @@ public class MicroNetSocket {
     private String type;
     public static final String AGENT_TYPE = "AGENT";
     private Logger logger = LoggerFactory.getLogger(MicroNetSocket.class.getName());
+    private Adressable adressable;
 
     public MicroNetSocket(String host, int port) throws IOException {
         this.socket = new Socket(host, port);
@@ -43,17 +44,13 @@ public class MicroNetSocket {
         this.socket = socket;
     }
 
-    /**
-     * @param type : Type of the destination : ROUTER, WORKER, REGISTRY, etc.
-     */
-    public MicroNetSocket(String type) throws MicroNetException, IOException {
-        this.type = type;
+    public MicroNetSocket(Adressable adressable) throws MicroNetException, IOException {
+        this.adressable = adressable;
     }
-
 
     public void connect() throws MicroNetException, IOException {
 
-        if (this.type != null && MicroNetMapRenewer.getInstance().getMap() != null && MicroNetMapRenewer.getInstance().getMap().size() > 0) {
+        if (this.adressable != null && MicroNetMapRenewer.getInstance(this.adressable).getMap() != null && MicroNetMapRenewer.getInstance(this.adressable).getMap().size() > 0) {
             // the map has already been retrieved
             return;
         }
@@ -66,7 +63,7 @@ public class MicroNetSocket {
             throw new MicroNetException("Registry host or port not set in the configuration file");
         }
 
-        if (this.type == null) {
+        if (this.adressable == null) {
             if (this.socket == null) {
                 this.socket = new Socket(host, port);
                 logger.debug("Registry host " + host + " reached on port " + port);
@@ -80,7 +77,7 @@ public class MicroNetSocket {
 
         // Here type is set
         logger.debug("registry host '" + host + "' reached on port " + port + ", calling map renewer");
-        MicroNetMapRenewer.getInstance().renewMap();
+        MicroNetMapRenewer.getInstance(this.adressable).renewMap();
     }
 
     public void send(String data) throws MicroNetException, IOException{
@@ -92,21 +89,30 @@ public class MicroNetSocket {
             throw new MicroNetException("Data to send is null");
         }
 
-        logger.debug("MicroNetSocket.send: data to send is not null : " + data);
+        logger.debug("MicroNetSocket.send: data to send is : " + data);
 
-        if (this.type == null) {
+        if (this.adressable == null) {
             logger.debug("MicroNetSocket.send: Type of the destination is not set, sending data to the current socket");
             byte[] bytes = data.getBytes();
+            
+            if (this.socket == null) {
+                logger.error("MicroNetSocket.send: Socket and adressable are null");
+                throw new MicroNetException("Socket and adressable are null");
+            }
+
             OutputStream outputStream = this.socket.getOutputStream();
             outputStream.write(bytes);
             outputStream.flush();
             return;
         }
 
-        logger.debug("MicroNetSocket.send: Type of the destination is set to " + this.type);
+        // Here type is set
+        logger.debug("MicroNetSocket.send: Sender adressable is " + this.adressable);
 
         // type is set, we need to send the data to the appropriate destination
-        if (MicroNetMapRenewer.getInstance().getMap() == null || MicroNetMapRenewer.getInstance().getMap().size() == 0) {
+        Map<String, List<Adressable>> map = MicroNetMapRenewer.getInstance(this.adressable).getMap();
+
+        if (map == null || map.size() == 0) {
             logger.error("MicroNetSocket.send: You must connect first to registry to get the map of adressables");
             throw new MicroNetException("You must connect first to registry to get the map of adressables");
         }
@@ -116,11 +122,23 @@ public class MicroNetSocket {
         Gson gson = new Gson();
         Message m = gson.fromJson(data, Message.class);
 
+        Adressable adressable = loadBalanceAdressables(m);
+
+        logger.debug("MicroNetSocket.send: Sending data to " + adressable);
+        OutputStream outputStream = this.socket.getOutputStream();
+        byte[] bytes = data.getBytes();
+        outputStream.write(bytes);
+        outputStream.flush();
+        logger.debug("MicroNetSocket.send: Data sent to " + adressable);
+    }
+
+    private Adressable loadBalanceAdressables(Message m) throws MicroNetException, IOException {
+
         List<Adressable> adressables = getTargetAddressableList(m); // get the list of target adressables for this message
 
         if (adressables == null || adressables.size() == 0) {
-            logger.error("MicroNetSocket.send: No adressable found for type " + this.type + (m.getPath() != null && !m.getPath().isEmpty() ? " and path " + m.getPath() : ""));
-            throw new MicroNetException("No adressable found for type " + this.type + " and path " + m.getPath());
+            logger.error("MicroNetSocket.send: No adressable found for type " + this.adressable.getType() + (m.getPath() != null && !m.getPath().isEmpty() ? " and path " + m.getPath() : ""));
+            throw new MicroNetException("No adressable found for type " + this.adressable.getType() + " and path " + m.getPath());
         }
 
         int adressablesSize = adressables.size();
@@ -161,12 +179,8 @@ public class MicroNetSocket {
             throw new MicroNetException("No reachable adressable found for type " + this.type);
         }
 
-        logger.debug("MicroNetSocket.send: Sending data to " + adressable);
-        OutputStream outputStream = this.socket.getOutputStream();
-        byte[] bytes = data.getBytes();
-        outputStream.write(bytes);
-        outputStream.flush();
-        logger.debug("MicroNetSocket.send: Data sent to " + adressable);
+        return adressable;
+
     }
 
     public static int generateRandomNumber(int n) {
@@ -202,21 +216,27 @@ public class MicroNetSocket {
         return adressables.get(idx);
     }
 
-    List<Adressable> getTargetAddressableList(Message message) throws MicroNetException {
+    List<Adressable> getTargetAddressableList(Message message) throws MicroNetException, IOException {
 
         if (message == null) {
             throw new MicroNetException("MicroNetSocket: Target agent list undefinable because the message is null");
         }
 
-        if (this.type == null) {
-            throw new MicroNetException("MicroNetSocket: Target agent list undefinable because the message Receiver type is unknown");
+        if (this.adressable == null) {
+            // should never be executed normally
+            throw new MicroNetException("MicroNetSocket: Target list undefinable because the message Receiver type is unknown");
         }
 
-        if (!AGENT_TYPE.equalsIgnoreCase(this.type)) {
-            return MicroNetMapRenewer.getInstance().getMap().get(this.type);
+        if (!AGENT_TYPE.equalsIgnoreCase(this.adressable.getType())) {
+            logger.debug("MicroNetSocket.getTargetAddressableList: Getting the adressables list for type " + this.adressable.getType());
+            List<Adressable> adressables = MicroNetMapRenewer.getInstance(this.adressable).getMap().get(this.adressable.getType());
+            if (adressables == null || adressables.size() == 0) {
+                    MicroNetMapRenewer.getInstance(this.adressable).renewMap();
+            }
+            return MicroNetMapRenewer.getInstance(this.adressable).getMap().get(this.adressable.getType());
         }
 
-        Map<String, List<Adressable>> pathMap = MicroNetMapRenewer.getInstance().getAgentsMap();
+        Map<String, List<Adressable>> pathMap = MicroNetMapRenewer.getInstance(this.adressable).getAgentsMap();
         if (pathMap == null || pathMap.isEmpty()) {
             throw new MicroNetException("MicroNetSocket: No target agents available");
         }
@@ -243,7 +263,7 @@ public class MicroNetSocket {
         // Sort the pathList in descending order
         Collections.sort(pathList, Collections.reverseOrder());
         String path = pathList.get(0);
-        return MicroNetMapRenewer.getInstance().getAgentsMap().get(path);
+        return MicroNetMapRenewer.getInstance(this.adressable).getAgentsMap().get(path);
 
     }
 

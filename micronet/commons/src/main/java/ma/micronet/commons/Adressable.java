@@ -83,4 +83,32 @@ public class Adressable {
     public String toString() {
         return "Adressable [id=" + id + ", type=" + type + ", path=" + path + ", port=" + port + ", host=" + host + "]";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        
+        if (obj == null) {
+            return false;
+        }
+
+        if (obj instanceof Adressable) {
+            Adressable other = (Adressable) obj;
+            if ((getHost() == null && other.getHost() != null) || (getHost() != null && other.getHost() == null)) {
+                return false;
+            }
+
+            if ((getPort() == 0 && other.getPort() != 0) || (getPort() != 0 && other.getPort() == 0)) {
+                return false;
+            }
+
+            if (getHost() == null) {
+                return true;
+            }
+
+            return this.getHost().equals(other.getHost()) && this.getPort().equals(other.getPort());
+        }
+        else {
+            return false;
+        }
+    }
 }

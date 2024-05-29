@@ -30,8 +30,4 @@ public class GatewayFactory {
         return gateway;
     }
 
-    public static GatewayConnection createConnection() {
-        return new GatewayConnection();
-    }
-
 }

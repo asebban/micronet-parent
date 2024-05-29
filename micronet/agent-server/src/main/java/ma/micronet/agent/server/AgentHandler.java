@@ -34,6 +34,8 @@ public class AgentHandler implements Runnable {
             Gson gson = new Gson();
             Message message = gson.fromJson(request, Message.class);
             Message response = processor.process(message);
+            response.setSenderAdressable(processor.getAgent());
+            
             String responseString = gson.toJson(response);
             logger.debug("Agent Handler ID " + processor.getAgent().getId() + ": Sending response: " + responseString);
             this.socket.getOutputStream().write(responseString.getBytes());

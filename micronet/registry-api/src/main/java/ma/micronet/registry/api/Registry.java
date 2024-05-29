@@ -27,6 +27,8 @@ public class Registry extends Adressable {
     public static final String UNSUBSCRIBE_NACK = "UNSUBSCRIBE_NACK";
 
     public static final String GATEWAY_TYPE = "GATEWAY";
+    @SuppressWarnings("unused")
+    private static Adressable adressable;
 
     private static Logger logger = LoggerFactory.getLogger(Registry.class);
     
@@ -52,20 +54,22 @@ public class Registry extends Adressable {
         this.setId(UIDGenerator.generateUID());
     }
 
-    public static RegistryMessage createGetMapRegistryRequest(String type) throws MicroNetException {
+    public Registry(Adressable adressable) {
+        super(adressable.getHost(), adressable.getPort(), adressable.getType());
+        this.adressable = adressable;
+        this.setId(UIDGenerator.generateUID());
+    }
+
+    public static RegistryMessage createGetMapRegistryRequest(String type, Adressable adressable) throws MicroNetException {
         RegistryMessage m = new RegistryMessage();
         m.setDirection(Message.REQUEST);
         m.setCommand(Registry.REGISTRY_GETMAP);
-        try {
-            Adressable a = createAdressable(type);
-            m.setSenderAdressable(a);
-            m.setSenderType(a.getType());
-        } catch (UnknownHostException e) {
-            throw new MicroNetException("Error getting the current host", e);
+        if (adressable == null) {
+            logger.error("Registry.createGetMapRegistryRequest: Error creating the get map request: Adressable is null");
+            throw new MicroNetException("Registry.createGetMapRegistryRequest: Error creating the get map request: Adressable is null");
         }
-        catch (NumberFormatException e) {
-            throw new MicroNetException("Error getting the registry port", e);
-        }
+        m.setSenderAdressable(adressable);
+        m.setSenderType(adressable.getType());
         return m;
     }
 

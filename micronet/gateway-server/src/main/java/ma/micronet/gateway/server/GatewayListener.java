@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.gateway.api.Gateway;
-import ma.micronet.gateway.api.GatewayConnection;
 import ma.micronet.gateway.api.GatewayFactory;
 import ma.micronet.registry.api.Registry;
 import sun.misc.SignalHandler;
@@ -19,12 +19,13 @@ public class GatewayListener {
 
     public static final String GATEWAY_TYPE = "GATEWAY";
     private Logger logger = LoggerFactory.getLogger(GatewayListener.class);
+    private Gateway gateway;
 
     public void start() throws MicroNetException, IOException {
 
-        Gateway gateway = GatewayFactory.createGateway();
+        this.gateway = GatewayFactory.createGateway();
         logger.debug("GatewayListener: Subscribing the gateway " + gateway.getId() + " to the registry");
-        Registry.subscribe(gateway);
+        Registry.subscribe(this.gateway);
         logger.debug("GatewayListener: Gateway " + gateway.getId() + "subscribed to the registry");
     
         ////////////////////////////////////
@@ -43,11 +44,12 @@ public class GatewayListener {
 
         try (ServerSocket serverSocket = new ServerSocket(gateway.getPort())) {
             logger.info("GatewayListener: Server is listening on port " + gateway.getPort());
-
+            MicroNetMapRenewer.getInstance(this.gateway).renewMap();
+            
             while (true) {
                 Socket socket = serverSocket.accept();
                 logger.debug("GatewayListener: New client connected");
-                new Thread(new GatewayClientHandler(socket)).start();
+                new Thread(new GatewayClientHandler(socket, gateway)).start();
             }
         } catch (IOException ex) {
             logger.error("GatewayListener: Server exception: " + ex.getMessage());
@@ -70,7 +72,4 @@ public class GatewayListener {
         }
     }
 
-    public static GatewayConnection createGatewayConnection() {
-        return new GatewayConnection();
-    }
 }
