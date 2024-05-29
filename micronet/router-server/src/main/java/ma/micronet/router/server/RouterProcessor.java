@@ -12,7 +12,6 @@ import com.google.gson.Gson;
 
 import ma.micronet.agent.api.Agent;
 import ma.micronet.agent.api.AgentConnection;
-import ma.micronet.agent.api.AgentFactory;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 

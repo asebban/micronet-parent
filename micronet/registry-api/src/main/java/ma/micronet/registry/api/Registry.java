@@ -56,7 +56,7 @@ public class Registry extends Adressable {
 
     public Registry(Adressable adressable) {
         super(adressable.getHost(), adressable.getPort(), adressable.getType());
-        this.adressable = adressable;
+        Registry.adressable = adressable;
         this.setId(UIDGenerator.generateUID());
     }
 
