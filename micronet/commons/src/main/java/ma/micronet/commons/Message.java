@@ -110,4 +110,12 @@ public class Message {
     public void setSenderType(String senderType) {
         this.senderType = senderType;
     }
+
+    public static Message errorMessage(String message) {
+        Message m = new Message();
+        m.setResponseCode(Message.ERROR);
+        m.setDirection(Message.RESPONSE);
+        m.setPayLoad(message);
+        return m;
+    }
 }

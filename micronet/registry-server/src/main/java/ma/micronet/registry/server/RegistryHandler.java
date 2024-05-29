@@ -71,8 +71,6 @@ public class RegistryHandler implements Runnable {
             logger.debug("RegistryHandler: No sender adressable in message (sender is null)");
         }
 
-        //RegistryMapController.getInstance().cleanRegistryMap();
-        
         logger.debug("RegistryHandler: Processing message: " + message.toString());
         switch(message.getCommand()) {
             case Registry.SUBSCRIBE_COMMAND:
@@ -93,6 +91,7 @@ public class RegistryHandler implements Runnable {
                 break;
         }
 
+        RegistryMapController.getInstance().cleanRegistryMap();
         return response;
     }
 
