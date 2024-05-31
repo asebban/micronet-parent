@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
+import ma.micronet.commons.networking.PingListener;
 import ma.micronet.gateway.api.Gateway;
 import ma.micronet.gateway.api.GatewayFactory;
 import ma.micronet.registry.api.Registry;
@@ -35,12 +36,22 @@ public class GatewayListener {
             @Override
             public void handle(Signal signal) {
                 logger.debug("Router Listener: Signal " + signal + " reçu. Arrêt en cours...");
-                System.exit(0);
+                try {
+                    Registry.unsubscribe(gateway);
+                } catch (MicroNetException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    System.exit(0);
+                }
             }
         };
 
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
+
+        new Thread(new PingListener(gateway)).start();
 
         try (ServerSocket serverSocket = new ServerSocket(gateway.getPort())) {
             logger.info("GatewayListener: Server is listening on port " + gateway.getPort());

@@ -57,7 +57,13 @@ public class GatewayClientHandler implements Runnable{
             os.write(gson.toJson(response).getBytes());
             logger.debug("GatewayClientHandler: Response sent back to the client");
         } catch (Exception e) {
+            logger.error("GatewayClientHandler: Error handling the client request: " + e.getMessage());
             e.printStackTrace();
+            try {
+                this.incomingSocket.getOutputStream().write(Message.errorMessage("GatewayClientHandler: Error handling the client request: " + e.getMessage()).toString().getBytes());
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         } finally {
             try {
                 this.incomingSocket.close();

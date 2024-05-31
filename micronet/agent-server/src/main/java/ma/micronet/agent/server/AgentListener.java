@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import ma.micronet.agent.api.AgentProcessor;
 import ma.micronet.agent.api.AgentProcessorFactory;
 import ma.micronet.commons.MicroNetException;
-import ma.micronet.commons.PingListener;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
+import ma.micronet.commons.networking.PingListener;
 import ma.micronet.registry.api.Registry;
 import sun.misc.SignalHandler;
 import sun.misc.Signal;
@@ -25,8 +25,8 @@ public class AgentListener {
         
         processor = AgentProcessorFactory.findProcessorInstance();
         Registry.subscribe(processor.getAgent());
-        logger.debug("Agent Listener: Subscribed the agent ID " + processor.getAgent().getId() + " to the registry");
-        new Thread(new PingListener(processor.getAgent())).start();
+        logger.debug("Agent Listener: Subscribed the agent " + processor.getAgent() + " to the registry");
+        //new Thread(new PingListener(processor.getAgent())).start();
 
         ////////////////////////////////////
         // Handle SIGINT interruption signal
@@ -35,17 +35,28 @@ public class AgentListener {
             @Override
             public void handle(Signal signal) {
                 logger.debug("Agent Listener: Signal " + signal + " reçu. Arrêt en cours...");
-                System.exit(0);
+                try {
+                    Registry.unsubscribe(processor.getAgent());
+                } catch (MicroNetException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    System.exit(0);
+                }
             }
         };
 
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
 
+        new Thread(new PingListener(processor.getAgent())).start();
+
+        logger.info("Server is listening on port " + processor.getAgent().getPort());
+
         try (ServerSocket serverSocket = new ServerSocket(processor.getAgent().getPort())) {
 
             // Register the agent to the registry
-            logger.info("Server is listening on port " + processor.getAgent().getPort());
             MicroNetMapRenewer.getInstance(processor.getAgent()).renewMap();
             
             while (true) {

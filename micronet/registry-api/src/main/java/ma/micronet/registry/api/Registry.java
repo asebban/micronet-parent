@@ -60,7 +60,7 @@ public class Registry extends Adressable {
         this.setId(UIDGenerator.generateUID());
     }
 
-    public static RegistryMessage createGetMapRegistryRequest(String type, Adressable adressable) throws MicroNetException {
+    public static RegistryMessage createGetMapRegistryRequest(Adressable adressable) throws MicroNetException {
         RegistryMessage m = new RegistryMessage();
         m.setDirection(Message.REQUEST);
         m.setCommand(Registry.REGISTRY_GETMAP);

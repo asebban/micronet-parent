@@ -1,5 +1,6 @@
 package ma.micronet.agent.server;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class AgentHandler implements Runnable {
             preProcessedMessage.setSenderAdressable(processor.getAgent());
 
             List<IProcessingUnit> processingUnits = AgentProcessorFactory.findProcessingUnits();
-            String rootPath = processor.getAgent().getPath();
+            String rootPath = processor.registerPath();
             rootPath = formatPath(rootPath);
 
             Message responseMessage=null;
@@ -76,6 +77,12 @@ public class AgentHandler implements Runnable {
             logger.debug("Agent Handler ID " + processor.getAgent().getId() + ": Sending response: " + responseString);
             this.socket.getOutputStream().write(responseString.getBytes());
         } catch (Exception e) {
+            Message error = Message.errorMessage("Error processing the request: " + e.getMessage());
+            try {
+                this.socket.getOutputStream().write(error.toString().getBytes());
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
             try {
@@ -101,8 +108,8 @@ public class AgentHandler implements Runnable {
         return path;
     }
 
-    private Map<String, String> extractPathVariablesAndValues(String template, String s) {
-        if (template == null || s == null) {
+    private Map<String, String> extractPathVariablesAndValues(String template, String path) {
+        if (template == null || path == null) {
             throw new IllegalArgumentException("AgentHandler.extractPathVariablesAndValues: template and s must not be null");
         }
         Map<String, String> pathVariables = new HashMap<>();
@@ -113,7 +120,8 @@ public class AgentHandler implements Runnable {
         Pattern placeholderPattern = Pattern.compile("\\{(.*?)}");
         Matcher placeholderMatcher = placeholderPattern.matcher(template);
 
-        StringBuffer regexBuffer = new StringBuffer(template);
+        StringBuffer regexBuffer = new StringBuffer("");
+
         while (placeholderMatcher.find()) {
             groupNames.add(placeholderMatcher.group(1));
             placeholderMatcher.appendReplacement(regexBuffer, "(.*?)");
@@ -123,7 +131,7 @@ public class AgentHandler implements Runnable {
         String regex = regexBuffer.toString();
         // Compile the pattern
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(s);
+        Matcher matcher = pattern.matcher(path);
 
         if (matcher.matches()) {
             // Extract the values and print them along with their names
@@ -140,15 +148,15 @@ public class AgentHandler implements Runnable {
         return pathVariables;
     }
 
-    private Map<String, String> extractQueryParameters(String s) {
-        if (s == null) {
+    private Map<String, String> extractQueryParameters(String chain) {
+        if (chain == null) {
             throw new IllegalArgumentException("AgentHandler.extractQueryParameters: s must not be null");
         }
 
         Map<String, String> queryParameters = new HashMap<>();
         // Extract the query parameters
-        if (s.contains("?")) {
-            String query = s.substring(s.indexOf("?") + 1);
+        if (chain.contains("?")) {
+            String query = chain.substring(chain.indexOf("?") + 1);
             String[] pairs = query.split("&");
             for (String pair : pairs) {
                 String[] keyValue = pair.split("=");
@@ -159,11 +167,8 @@ public class AgentHandler implements Runnable {
     }
 
     public boolean matchesTemplate(String template, String url) {
-        // Escape special regex characters in the template
-        String escapedTemplate = Pattern.quote(template);
-
         // Replace the placeholders with regex patterns
-        String regex = escapedTemplate.replaceAll("\\\\\\{[^}]+\\\\\\}", "([^/]+)");
+        String regex = template.replaceAll("\\{[^}]+\\}", "([^/]+)");
 
         // Create a pattern from the regex
         Pattern pattern = Pattern.compile(regex);

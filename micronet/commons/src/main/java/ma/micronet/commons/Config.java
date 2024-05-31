@@ -13,7 +13,14 @@ public class Config {
     }
 
     public String getProperty(String key) {
-        return props.getProperty(key);
+        String property = props.getProperty(key);
+        if (property == null) {
+            key = key.toUpperCase();
+            key = key.replace(".", "_");
+            // get the value of the environment variable with the given name, or null if no such variable exists
+            property = System.getenv(key);
+        }
+        return property;
     }
     
     public Properties getProps() {

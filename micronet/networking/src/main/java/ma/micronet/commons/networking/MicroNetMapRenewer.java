@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken;
 
 import ma.micronet.commons.Adressable;
 import ma.micronet.commons.Config;
+import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.registry.api.RegistryMessage;
@@ -76,7 +77,7 @@ public class MicroNetMapRenewer {
             throw new MicroNetException("Registry host or port not set in the configuration file"); // Throw a MicroNetException if the host or port is not set
         }
 
-        RegistryMessage m = Registry.createGetMapRegistryRequest(MAP_RENEWER_TYPE, this.adressable);
+        RegistryMessage m = Registry.createGetMapRegistryRequest(this.adressable);
         Gson gson = new Gson();
         // convert the message to a JSON string using Gson
         String json = gson.toJson(m);
@@ -103,7 +104,7 @@ public class MicroNetMapRenewer {
             throw new MicroNetException("Error while sending the message to the Registry", e);
         }
 
-        byte[] buffer = new byte[4048];
+        byte[] buffer = new byte[Message.BUFFER_SIZE];
 
         int bytesRead;
         try {
@@ -125,8 +126,12 @@ public class MicroNetMapRenewer {
 
         // convert the response to a Message object using Gson
         try {
+            response = response.trim();
+            logger.debug("Response received from registry: " + response);
             RegistryMessage registryMessage = gson.fromJson(response, RegistryMessage.class);
             String payLoad = registryMessage.getPayLoad();
+            payLoad = payLoad.trim();
+            logger.debug("Payload received from registry: " + payLoad);
             Type mapType = new TypeToken<Map<String, List<Adressable>>>() {}.getType();
             this.map = gson.fromJson(payLoad, mapType);
         } catch (JsonSyntaxException e) {
@@ -140,6 +145,7 @@ public class MicroNetMapRenewer {
 
         // prepare agents map for routers
         List<Adressable> agents = this.map.get(AGENT_TYPE);
+        // Map indexed by path
         this.agentsMap = prepareAgentsMap(agents);
         return this.map;
     }

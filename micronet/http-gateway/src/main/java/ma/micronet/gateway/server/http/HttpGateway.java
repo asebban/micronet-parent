@@ -13,7 +13,6 @@ import ma.micronet.commons.Config;
 import ma.micronet.commons.ConfigReader;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
-import ma.micronet.commons.PortGenerator;
 import ma.micronet.commons.UIDGenerator;
 import ma.micronet.gateway.api.Gateway;
 import ma.micronet.gateway.api.GatewayConnection;
@@ -224,7 +223,6 @@ public class HttpGateway {
         adressable.setPort(Integer.parseInt(Config.getInstance().getProperty("server.port")));
         adressable.setType(HTTP_GATEWAY_TYPE);
         adressable.setId(UIDGenerator.generateUID());
-        adressable.setPingPort(PortGenerator.getInstance().generatePort());
         return adressable;
     }
 }

@@ -91,7 +91,7 @@ public class RegistryHandler implements Runnable {
                 break;
         }
 
-        RegistryMapController.getInstance().cleanRegistryMap();
+        //RegistryMapController.getInstance().cleanRegistryMap();
         return response;
     }
 
@@ -113,14 +113,15 @@ public class RegistryHandler implements Runnable {
 
     public Message getMap(Message request) {
         Adressable sender = request.getSenderAdressable();
-        
-        if (sender != null) {
-            RegistryMapController.getInstance().updateLastSeen(sender);
+        Map<String, List<Adressable>> registryMap = RegistryMapController.getInstance().getRegistryMap();
+        if (registryMap == null) {
+            logger.debug("RegistryHandler.getMap: Registry map is empty");
         }
 
-        Map<String, List<Adressable>> registryMap = RegistryMapController.getInstance().getRegistryMap();
+        logger.debug("RegistryHandler.getMap: Sending registry map to " + sender.getType());
         Message response = createGetMapMessage(request, registryMap);
         return response;
+
     }
 
     private Message createSubscribeAckMessage(Message request) {

@@ -145,7 +145,7 @@ public class MicroNetSocket {
         // generate a random number between 0 and adressablesSize-1
         int idx = generateRandomNumber(adressablesSize);
 
-        logger.debug("MicroNetSocket.send: List of "+ adressablesSize + " adressables found for type " + this.type);
+        logger.debug("MicroNetSocket.send: List of "+ adressablesSize + " adressables found for type " + m.getTargetType());
 
         Adressable adressable = getNextAdressable(adressables, idx);
 

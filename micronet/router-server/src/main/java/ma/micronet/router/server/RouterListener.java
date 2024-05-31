@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
+import ma.micronet.commons.networking.PingListener;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.router.api.Router;
 import ma.micronet.router.api.RouterFactory;
@@ -54,6 +55,8 @@ public class RouterListener implements IListener {
 
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
+
+        new Thread(new PingListener(router)).start();
 
         try (ServerSocket serverSocket = new ServerSocket(router.getPort())) {
             logger.debug("Router Listener: Router is listening on port " + router.getPort());

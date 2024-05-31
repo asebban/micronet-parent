@@ -2,6 +2,7 @@ package ma.micronet.commons;
 
 import java.util.Map;
 import java.util.HashMap;
+import com.google.gson.Gson;
 
 public class Message {
 
@@ -15,6 +16,7 @@ public class Message {
     public static final String OK = "OK";
     public static final String NOK = "NOK";
     public static final String ERROR = "ERROR";
+    public static final int BUFFER_SIZE = 4048;
 
     private String path;
     private String senderId;
@@ -117,5 +119,16 @@ public class Message {
         m.setDirection(Message.RESPONSE);
         m.setPayLoad(message);
         return m;
+    }
+
+    @Override
+    public String toString() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
+
+    public static Message jsonToMessage(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, Message.class);
     }
 }
