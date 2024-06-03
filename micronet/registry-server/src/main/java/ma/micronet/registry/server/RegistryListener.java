@@ -9,6 +9,7 @@ import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Pinger;
 import ma.micronet.registry.api.Registry;
+import ma.micronet.registry.api.RegistryFactory;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -30,7 +31,7 @@ public class RegistryListener implements IListener {
     public void start() throws MicroNetException {
 
         logger.info("Starting RegistryListener");
-        Registry registry = new Registry();
+        Registry registry = RegistryFactory.createRegistry();
 
         ////////////////////////////////////
         // Handle SIGINT interruption signal

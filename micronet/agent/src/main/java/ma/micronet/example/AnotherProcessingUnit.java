@@ -1,0 +1,31 @@
+package ma.micronet.example;
+
+import ma.micronet.agent.api.IProcessingUnit;
+import ma.micronet.commons.Message;
+import ma.micronet.commons.MicroNetException;
+import java.util.Map;
+
+public class AnotherProcessingUnit implements IProcessingUnit {
+
+    @Override
+    public Message execute(Message request) throws MicroNetException {
+        Message response = Message.copy(request);
+        response.setDirection(Message.RESPONSE);
+        response.setResponseCode(Message.OK);
+        String payload = "This is my another processing unit response -> ";
+
+        if (request.getParameters() != null && request.getParameters().size() > 0) {
+            for (Map.Entry<String, Object> entry : request.getParameters().entrySet()) {
+                payload += entry.getKey() + " = " + entry.getValue();
+            }
+        }
+        response.setPayLoad(payload);
+        return response;
+    }
+
+    @Override
+    public String registerRelativePath() {
+        return "/another/{id}";
+    }
+
+}

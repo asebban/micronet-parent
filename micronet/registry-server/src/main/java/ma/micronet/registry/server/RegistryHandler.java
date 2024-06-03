@@ -139,7 +139,7 @@ public class RegistryHandler implements Runnable {
     }
 
     private Message createGetMapMessage(Message request, Map<String, List<Adressable>> registryMap) {
-        Message response = new Message();
+        Message response = Message.copy(request);
         response.setCommand(Registry.REGISTRY_GETMAP);
         response.setDirection(Message.RESPONSE);
         response.setSenderType(Registry.REGISTRY_TYPE);
@@ -153,7 +153,7 @@ public class RegistryHandler implements Runnable {
     }
 
     private Message createErrorMessage(Message request, String errorMessage) {
-        Message response = new Message();
+        Message response = Message.copy(request);
         response.setResponseCode(Message.ERROR);
         response.setDirection(Message.RESPONSE);
         response.setSenderType(Registry.REGISTRY_TYPE);

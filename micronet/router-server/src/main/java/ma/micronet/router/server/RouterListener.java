@@ -7,7 +7,6 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ma.micronet.commons.Config;
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
@@ -21,10 +20,10 @@ import sun.misc.Signal;
 public class RouterListener implements IListener {
 
     private Logger logger = LoggerFactory.getLogger(RouterListener.class);
+    private Router router;
 
     @Override
     public void start() throws MicroNetException {
-        Router router = null;
 
         // Create the router
         try {
@@ -34,41 +33,13 @@ public class RouterListener implements IListener {
             e.printStackTrace();
         }
 
-        Boolean isSubscribed = false;
-
-        // Get the reconnect interval from the configuration
-        Integer reconnectInterval = 0;
+        logger.debug("Router Listener: Subscribing the router to the registry -> " + router);
+        Registry.subscribe(router);
+        logger.debug("Router Listener: Router subscribed successfully to the registry");
         try {
-            reconnectInterval=Integer.parseInt(Config.getInstance().getProperty("router.registry.reconnect.interval"));
-        } catch (NumberFormatException e) {
-            reconnectInterval = 2000;
-        }
-
-        // Subscribe the router to the registry: reconnect while not subscribed
-        while(!isSubscribed) {
-            try {
-                logger.debug("Router Listener: Subscribing the router to the registry -> " + router);
-                Registry.subscribe(router);
-                logger.debug("Router Listener: Router subscribed successfully to the registry");
-                isSubscribed = true;
-                MicroNetMapRenewer.getInstance(router).renewMap();
-            } catch (MicroNetException e) {
-                logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
-                e.printStackTrace();
-                try {
-                    Thread.sleep(reconnectInterval);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            } catch (IOException e) {
-                logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
-                e.printStackTrace();
-                try {
-                    Thread.sleep(reconnectInterval);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            }  
+            MicroNetMapRenewer.getInstance(router).renewMap();
+        } catch (MicroNetException | IOException e) {
+            e.printStackTrace();
         }
         
         ////////////////////////////////////
@@ -78,6 +49,11 @@ public class RouterListener implements IListener {
             @Override
             public void handle(Signal signal) {
                 logger.debug("Router Listener: Signal " + signal + " reçu. Arrêt en cours...");
+                try {
+                    Registry.unsubscribe(router);
+                } catch (MicroNetException | IOException e) {
+                    e.printStackTrace();
+                }
                 System.exit(0);
             }
         };
