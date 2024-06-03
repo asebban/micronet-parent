@@ -33,12 +33,6 @@ public class Registry extends Adressable {
     private static Logger logger = LoggerFactory.getLogger(Registry.class);
     
     public Registry() {
-        String host=null;
-        host = Config.getInstance().getProperty("registry.host");
-        int port = Integer.parseInt(Config.getInstance().getProperty("registry.port"));
-
-        super.setHost(host);
-        super.setPort(port);
         this.setType(REGISTRY_TYPE);
         this.setId(UIDGenerator.generateUID());
     }
@@ -73,7 +67,7 @@ public class Registry extends Adressable {
         return m;
     }
 
-    public static void subscribe(Adressable a) throws MicroNetException, IOException {
+    public static void subscribe(Adressable a) throws MicroNetException {
 
         RegistryMessage m = new RegistryMessage();
         
@@ -99,67 +93,92 @@ public class Registry extends Adressable {
         String adressable = gson.toJson(a);
         m.setPayLoad(adressable);
 
-        Socket socket;
+        Socket socket=null;
+        Integer reconnectInterval=2;
+        
         try {
-            logger.debug("Registry: Opening a socket to the registry");
-            socket = new Socket(registryHost, registryPort);
-            logger.debug("Registry: Socket opened to the registry");
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            logger.error("Registry: Error opening a socket to the registry: " + e.getMessage());
-            throw new MicroNetException(e);
-        } catch (IOException e) {
-            logger.error("Registry: Error opening a socket to the registry: " + e.getMessage());
-            e.printStackTrace();
-            throw new MicroNetException(e);
-        }
-
-        try {
-            logger.debug("Registry: Sending the subscription request to the registry");
-            String json = gson.toJson(m);
-            logger.debug("Request JSON: " + json);
-            socket.getOutputStream().write(json.getBytes());
-            InputStream in = socket.getInputStream();
-            byte[] buffer = new byte[1024];
-            logger.debug("Registry: Reading the response from the registry");
-            in.read(buffer);
-            logger.debug("Registry: Response read from the registry");
-            String jsonResponse = new String(buffer, "UTF-8");
-            jsonResponse = jsonResponse.trim();
-            Message responseMessage = gson.fromJson(jsonResponse, Message.class);
-            
-            logger.debug("Response JSON: " + jsonResponse);
-
-            if (responseMessage.getCommand().equals(Registry.SUBSCRIBE_ACK)) {
-                logger.debug("Registry: Subscribed to the registry");
-            } else {
-                logger.error("Registry: Error subscribing to the registry");
-                socket.close();
-                throw new MicroNetException("Error subscribing to the registry");
-            }
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            socket.close();
-            logger.error("Registry: Error subscribing to the registry: " + e.getMessage());
-            throw new MicroNetException("Registry Host Unreachable", e);
-        } catch (IOException e) {
-            logger.error("Registry: Error subscribing to the registry: " + e.getMessage());
-            e.printStackTrace();
-            socket.close();
-            throw new MicroNetException("Unknown IO Exception", e);
-        } finally {
-            socket.close();
+            reconnectInterval = Integer.parseInt(Config.getInstance().getProperty("registry.reconnect.interval"));
+        } catch (NumberFormatException e) {
+            logger.debug("Registry: reconnect interval not configured. Using default value of " + reconnectInterval + " seconds");
         }
         
+        Boolean isSubscribed = false;
+
+        while(!isSubscribed)    {
+
+            try {
+                logger.debug("Registry: Opening a socket to the registry");
+                if (socket != null && !socket.isClosed()) {
+                    socket.close();
+                }
+                socket = new Socket(registryHost, registryPort);
+                logger.debug("Registry: Socket opened to the registry");
+            } catch (UnknownHostException e) {
+                logger.error("Registry: Error opening a socket to the registry: " + e.getMessage());
+                try {
+                    Thread.sleep(reconnectInterval*1000);
+                    continue;
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                    continue;
+                }
+            } catch (IOException e) {
+                logger.error("Registry: Error opening a socket to the registry: " + e.getMessage());
+                try {
+                    Thread.sleep(reconnectInterval*1000);
+                    continue;
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                    continue;
+                }
+            }
+        
+            try {
+                String json = gson.toJson(m);
+                logger.debug("Registry: Sending the subscription request to the registry -> " + json);
+                socket.getOutputStream().write(json.getBytes());
+                InputStream in = socket.getInputStream();
+                byte[] buffer = new byte[Message.BUFFER_SIZE];
+                logger.debug("Registry: Reading the response from the registry");
+                in.read(buffer);
+                String jsonResponse = new String(buffer, "UTF-8");
+                jsonResponse = jsonResponse.trim();
+                logger.debug("Registry: Response read from the registry -> " + jsonResponse);
+                Message responseMessage = gson.fromJson(jsonResponse, Message.class);
+                
+                logger.debug("Response JSON: " + jsonResponse);
+    
+                if (responseMessage.getCommand().equals(Registry.SUBSCRIBE_ACK)) {
+                    logger.debug("Registry: Subscribed to the registry");
+                    isSubscribed = true;
+                } else {
+                    logger.error("Registry: Error subscribing to the registry -> " + responseMessage.getPayLoad());
+                    continue;
+                }   
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+                logger.error("Registry: Error subscribing to the registry: " + e.getMessage());
+                continue;
+            } catch (IOException e) {
+                logger.error("Registry: Error subscribing to the registry: " + e.getMessage());
+                e.printStackTrace();
+                continue;
+            } 
+        }
+        
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void unsubscribe(Adressable a) throws MicroNetException, IOException {
 
         RegistryMessage m = new RegistryMessage();
         
-        String registryHost = Config.getInstance().getCurrentHost();
-        int registryPort = Integer.parseInt(Config.getInstance().getProperty("registry.port"));
+        String registryHost = Config.getInstance().getProperty("registry.host").trim();
+        int registryPort = Integer.parseInt(Config.getInstance().getProperty("registry.port").trim());
 
         logger.debug("Unsubscribing from the registry at " + registryHost + ":" + registryPort);
 
@@ -173,52 +192,57 @@ public class Registry extends Adressable {
         String adressable = gson.toJson(a);
         m.setPayLoad(adressable);
 
-        Socket socket;
-        try {
-            logger.debug("Registry: Opening a socket to the registry for unsubscribing");
-            socket = new Socket(registryHost, registryPort);
-            logger.debug("Registry: Socket opened to the registry for unsubscribing");
-        } catch (UnknownHostException e) {
-            logger.error("Registry: Error opening a socket to the registry for unsubscribing: " + e.getMessage());
-            e.printStackTrace();
-            throw new MicroNetException(e);
-        } catch (IOException e) {
-            logger.error("Registry: Error opening a socket to the registry for unsubscribing: " + e.getMessage());
-            e.printStackTrace();
-            throw new MicroNetException(e);
-        }
+        Boolean isUnsubscribed = false;
+        Socket socket=null;
 
-        try {
-            logger.debug("Registry: Sending the unsubscription request to the registry");
-            socket.getOutputStream().write(gson.toJson(m).getBytes());
-            InputStream in = socket.getInputStream();
-            byte[] buffer = new byte[1024];
-            logger.debug("Registry: Reading the response from the registry for unsubscribing");
-            in.read(buffer);
-            String response = new String(buffer, "UTF-8");
-            logger.debug("Registry: Response read from the registry for unsubscribing");
-            RegistryMessage responseMessage = gson.fromJson(response, RegistryMessage.class);
-            if (responseMessage.getResponseCode().equals(Registry.UNSUBSCRIBE_ACK)) {
-                logger.debug("Subscribed to the registry");
-            } else {
-                logger.error("Error subscribing to the registry");
-                socket.close();
-                throw new MicroNetException("Error subscribing to the registry");
+        while(!isUnsubscribed) {
+            try {
+                logger.debug("Registry: Opening a socket to the registry for unsubscribing");
+                if (socket != null && !socket.isClosed()) {
+                    socket.close();
+                }
+                socket = new Socket(registryHost, registryPort);
+                logger.debug("Registry: Socket opened to the registry for unsubscribing");
+            } catch (UnknownHostException e) {
+                logger.error("Registry: Error opening a socket to the registry for unsubscribing: " + e.getMessage());
+                e.printStackTrace();
+                continue;
+            } catch (IOException e) {
+                logger.error("Registry: Error opening a socket to the registry for unsubscribing: " + e.getMessage());
+                e.printStackTrace();
+                continue;
             }
 
-        } catch (UnknownHostException e) {
-            logger.error("Registry: Error unsubscribing from the registry: " + e.getMessage());
-            e.printStackTrace();
-            socket.close();
-            throw new MicroNetException("Registry Host Unreachable", e);
-        } catch (IOException e) {
-            logger.error("Registry: Error unsubscribing from the registry: " + e.getMessage());
-            e.printStackTrace();
-            socket.close();
-            throw new MicroNetException("Unknown IO Exception", e);
-        } finally {
-            socket.close();
-        }        
+            try {
+                logger.debug("Registry: Sending the unsubscription request to the registry");
+                socket.getOutputStream().write(gson.toJson(m).getBytes());
+                InputStream in = socket.getInputStream();
+                byte[] buffer = new byte[1024];
+                logger.debug("Registry: Reading the response from the registry for unsubscribing");
+                in.read(buffer);
+                String response = new String(buffer, "UTF-8");
+                logger.debug("Registry: Response read from the registry for unsubscribing");
+                RegistryMessage responseMessage = gson.fromJson(response, RegistryMessage.class);
+                if (responseMessage.getResponseCode().equals(Registry.UNSUBSCRIBE_ACK)) {
+                    logger.debug("Unsubscribed to the registry");
+                    isUnsubscribed = true;
+                } else {
+                    logger.error("Error subscribing to the registry: " + responseMessage.getPayLoad());
+                    continue;
+                }
+
+            } catch (UnknownHostException e) {
+                logger.error("Registry: Error unsubscribing from the registry: " + e.getMessage());
+                e.printStackTrace();
+                continue;
+            } catch (IOException e) {
+                logger.error("Registry: Error unsubscribing from the registry: " + e.getMessage());
+                e.printStackTrace();
+                continue;
+            }  
+        }
+        
+      
     }
 
     public static Adressable createAdressable(String type) throws UnknownHostException {

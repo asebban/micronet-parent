@@ -67,7 +67,7 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            String path = req.uri()+ (req.queryString() != null ? "?"+req.queryString() : ""); // Extract the path
             logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
@@ -103,7 +103,7 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            String path = req.uri()+ (req.queryString() != null ? "?"+req.queryString() : "");
             logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
@@ -139,7 +139,7 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            String path = req.uri()+ (req.queryString() != null ? "?"+req.queryString() : "");
             logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
@@ -177,7 +177,7 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            String path = req.uri()+ (req.queryString() != null ? "?"+req.queryString() : "");
             logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
