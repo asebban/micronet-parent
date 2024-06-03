@@ -67,19 +67,15 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String remainingPath = req.splat()[0]; // Extract the remaining part of the path
-            logger.debug("Http Gateway: Namespace requested: " + remainingPath);
+            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
-            m.setPath(remainingPath);
+            m.setPath(path);
             m.setSenderAdressable(httpGateway);
             m.setSenderType(HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.GET);
-
-            req.queryMap().toMap().forEach((key, value) -> {
-                m.getParameters().put(key, value);
-            });
 
             m.setPayLoad(req.body());
             logger.debug("Http Gateway: Sending a message to the raw gateway: " + m.toString());
@@ -107,19 +103,15 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String remainingPath = req.splat()[0]; // Extract the remaining part of the path
+            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
-            m.setPath(remainingPath);
+            m.setPath(path);
             m.setSenderAdressable(httpGateway);
             m.setSenderType(HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
-            m.setTargetType(AGENT_TYPE);
             m.setCommand(Message.ADD);
-
-            req.queryMap().toMap().forEach((key, value) -> {
-                m.getParameters().put(key, value);
-            });
 
             m.setPayLoad(req.body());
             logger.debug("Http Gateway: Sending a message to the raw gateway: " + m.toString());
@@ -147,14 +139,14 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String remainingPath = req.splat()[0]; // Extract the remaining part of the path
+            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
-            m.setPath(remainingPath);
+            m.setPath(path);
             m.setSenderAdressable(httpGateway);
             m.setSenderType(HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
-            m.setTargetType(AGENT_TYPE);
             m.setCommand(Message.UPDATE);
 
             req.queryMap().toMap().forEach((key, value) -> {
@@ -185,14 +177,14 @@ public class HttpGateway {
                 e.printStackTrace();
             }
 
-            String remainingPath = req.splat()[0]; // Extract the remaining part of the path
+            String path = req.uri()+"?"+req.queryString(); // Extract the path
+            logger.debug("Http Gateway: Namespace requested base uri: " + path);
             
             Message m = new Message();
-            m.setPath(remainingPath);
+            m.setPath(path);
             m.setSenderAdressable(httpGateway);
             m.setSenderType(HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
-            m.setTargetType(AGENT_TYPE);
             m.setCommand(Message.DELETE);
 
             req.queryMap().toMap().forEach((key, value) -> {

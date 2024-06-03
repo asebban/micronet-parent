@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.Adressable;
+import ma.micronet.commons.Config;
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Pinger;
@@ -45,7 +46,13 @@ public class RegistryListener implements IListener {
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
 
-        // Schedule ping checks every X seconds
+        // Schedule ping checks every periodicity in seconds
+        Integer periodicity = 0;
+        try {
+            periodicity = Integer.parseInt(Config.getInstance().getProperty("registry.ping.perdiodicity"));
+        } catch (Exception e) {
+            periodicity = 5;
+        }
         ScheduledExecutorService executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
             try {
@@ -53,7 +60,7 @@ public class RegistryListener implements IListener {
             } catch (Throwable e) {
                 e.printStackTrace();
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, periodicity, TimeUnit.SECONDS);
         
         try (ServerSocket serverSocket = new ServerSocket(registry.getPort())) {
 

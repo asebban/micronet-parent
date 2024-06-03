@@ -8,12 +8,13 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import ma.micronet.agent.api.Agent;
 import ma.micronet.agent.api.AgentConnection;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 public class RouterProcessor implements Runnable {
 
@@ -63,28 +64,38 @@ public class RouterProcessor implements Runnable {
 
     private String processRequest(String request) throws MicroNetException, IOException {
         // Process the request
-        Gson gson = new Gson();
         logger.debug("Router Processor: Parsing the request");
-        Message message = gson.fromJson(request, Message.class);
-        logger.debug("Router Processor: Routing the request");
+        Message message = Message.jsonToMessage(request);
+        logger.debug("Router Processor: Routing the request " + message.toString() + " to the agent");
         Message response = route(message);
         logger.debug("Router Processor: Request routed successfully");
-        return gson.toJson(response);
+        return response.toString();
     }
 
     private Message route(Message message) throws MicroNetException, IOException {
         // Route the request
         logger.debug("Router Processor: Creating a new agent connection");
         Agent agent = new Agent();
-        agent.setPath(message.getPath());
+        // Remove query parameters from the path
+        String pathWithoutQueryParameters = removeQueryParameters(message.getPath());
+        agent.setPath(pathWithoutQueryParameters);
         AgentConnection agentConnection = agent.createConnection();
         agentConnection.connect();
         logger.debug("Router Processor: Sending the request to the agent");
         Message response = agentConnection.sendSync(message);
         logger.debug("Router Processor: Request sent successfully to the agent and response received");
-    
+
         return response;
     }
 
-    // Use MicroNetSocket to connect to the destination
+    public String removeQueryParameters(String path) {
+        try {
+            URI uri = new URI(path);
+            return uri.getPath();
+        } catch (URISyntaxException e) {
+            // Handle exception
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

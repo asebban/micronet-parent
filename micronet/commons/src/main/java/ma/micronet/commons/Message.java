@@ -129,6 +129,23 @@ public class Message {
 
     public static Message jsonToMessage(String json) {
         Gson gson = new Gson();
+        json = json.trim();
         return gson.fromJson(json, Message.class);
+    }
+
+    public static Message copy(Message message) {
+        Message m = new Message();
+        m.setCommand(message.getCommand());
+        m.setDirection(message.getDirection());
+        m.setMessageId(message.getMessageId());
+        m.setParameters(message.getParameters());
+        m.setPath(message.getPath());
+        m.setPayLoad(message.getPayLoad());
+        m.setSenderId(message.getSenderId());
+        m.setSenderType(message.getSenderType());
+        m.setTargetAdressable(message.getTargetAdressable());
+        m.setTargetType(message.getTargetType());
+        
+        return m;
     }
 }

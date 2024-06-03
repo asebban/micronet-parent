@@ -35,13 +35,12 @@ public class RegistryHandler implements Runnable {
             byte[] buffer = new byte[1024];
             int bytesRead = is.read(buffer);
             String json = new String(buffer, 0, bytesRead);
-            Gson gson = new Gson();
-            Message message = gson.fromJson(json, Message.class);
+            Message message = Message.jsonToMessage(json);
 
             Message response = process(message);
             
             OutputStream os = this.socket.getOutputStream();
-            String responseJson = gson.toJson(response);
+            String responseJson = response.toString();
             logger.debug("RegistryHandler: Sending response: " + responseJson);
             os.write(responseJson.getBytes());
             os.flush();
@@ -60,16 +59,9 @@ public class RegistryHandler implements Runnable {
     }
 
     public Message process(Message message) {
+        
         Message response = null;
-
         Adressable sender = message.getSenderAdressable();
-        if (sender != null) {
-            logger.debug("RegistryHandler: Updating last seen for " + sender + " at " + System.currentTimeMillis());
-            RegistryMapController.getInstance().updateLastSeen(sender);
-        }
-        else {
-            logger.debug("RegistryHandler: No sender adressable in message (sender is null)");
-        }
 
         logger.debug("RegistryHandler: Processing message: " + message.toString());
         switch(message.getCommand()) {

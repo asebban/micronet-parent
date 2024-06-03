@@ -157,20 +157,15 @@ public class MicroNetMapRenewer {
         }
 
         Map<String, List<Adressable>> nm = new HashMap<>();
-        if (this.agentsMap == null) {
-            for(Adressable agent : agents) {
-                String path = agent.getPath();
-                logger.debug("MapRenewer: Adding agent " + agent + " to the agents map");
-                if (nm.get(path) == null) {
-                    nm.put(path, new ArrayList<>());
-                }
-                nm.get(path).add(agent);
-            }            
-            return nm;
-        }
-        else {
-            return this.agentsMap;
-        }
+        for(Adressable agent : agents) {
+            String path = agent.getPath();
+            logger.debug("MapRenewer: Adding agent " + agent + " to the agents map");
+            if (nm.get(path) == null) {
+                nm.put(path, new ArrayList<>());
+            }
+            nm.get(path).add(agent);
+        }            
+        return nm;
     }
 
     public Map<String, List<Adressable>> getMap() {

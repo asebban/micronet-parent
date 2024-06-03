@@ -17,6 +17,7 @@ public class MyAgentProcessingUnit implements IProcessingUnit {
                 payload += " " + key + " = " + message.getParameters().get(key);
             }
         }
+        payload += " verb = " + message.getCommand();
         response.setPayLoad(payload);
         response.setResponseCode(Message.OK);
         return response;
@@ -24,7 +25,7 @@ public class MyAgentProcessingUnit implements IProcessingUnit {
 
     @Override
     public String registerRelativePath() {
-        return "/{id}/add/{value}";
+        return "/get/{id}";
     }
 
 }

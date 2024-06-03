@@ -20,7 +20,7 @@ public class MyAgentProcessor extends AgentProcessor {
     @Override
     public Message process(Message message) throws MicroNetException {
         logger.debug("Processing message: " + message.toString());
-        Message response = new Message();
+        Message response = Message.copy(message);
         response.setDirection(Message.RESPONSE);
         response.setPayLoad("This is my agent response");
         response.setResponseCode(Message.OK);

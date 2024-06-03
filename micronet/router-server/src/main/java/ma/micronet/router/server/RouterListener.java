@@ -7,6 +7,7 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ma.micronet.commons.Config;
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
@@ -25,21 +26,49 @@ public class RouterListener implements IListener {
     public void start() throws MicroNetException {
         Router router = null;
 
+        // Create the router
         try {
-            logger.debug("Router Listener: Creating a new router");
             router = RouterFactory.createRouter();
-            logger.debug("Router Listener: Subscribing the router to the registry");
-            Registry.subscribe(router);
-            logger.debug("Router Listener: Router subscribed successfully to the registry");
-            MicroNetMapRenewer.getInstance(router).renewMap();
-        } catch (MicroNetException e) {
-            logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
+        } catch (MicroNetException | IOException e) {
+            logger.error("Router Listener: Error creating the router: " + e.getMessage());
             e.printStackTrace();
-            System.exit(2);
-        } catch (IOException e) {
-            logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(3);
+        }
+
+        Boolean isSubscribed = false;
+
+        // Get the reconnect interval from the configuration
+        Integer reconnectInterval = 0;
+        try {
+            reconnectInterval=Integer.parseInt(Config.getInstance().getProperty("router.registry.reconnect.interval"));
+        } catch (NumberFormatException e) {
+            reconnectInterval = 2000;
+        }
+
+        // Subscribe the router to the registry: reconnect while not subscribed
+        while(!isSubscribed) {
+            try {
+                logger.debug("Router Listener: Subscribing the router to the registry -> " + router);
+                Registry.subscribe(router);
+                logger.debug("Router Listener: Router subscribed successfully to the registry");
+                isSubscribed = true;
+                MicroNetMapRenewer.getInstance(router).renewMap();
+            } catch (MicroNetException e) {
+                logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
+                e.printStackTrace();
+                try {
+                    Thread.sleep(reconnectInterval);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            } catch (IOException e) {
+                logger.error("Router Listener: Error subscribing the router to the registry: " + e.getMessage());
+                e.printStackTrace();
+                try {
+                    Thread.sleep(reconnectInterval);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }  
         }
         
         ////////////////////////////////////
@@ -56,10 +85,11 @@ public class RouterListener implements IListener {
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
 
+        // start the ping listener
         new Thread(new PingListener(router)).start();
 
         try (ServerSocket serverSocket = new ServerSocket(router.getPort())) {
-            logger.debug("Router Listener: Router is listening on port " + router.getPort());
+            logger.info("Router Listener: Router is listening on port " + router.getPort());
 
             while (true) {
                 Socket socket = serverSocket.accept();

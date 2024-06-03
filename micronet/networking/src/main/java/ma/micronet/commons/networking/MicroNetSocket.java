@@ -20,7 +20,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import java.util.Random;
 
 public class MicroNetSocket {
@@ -119,8 +118,7 @@ public class MicroNetSocket {
 
         logger.debug("MicroNetSocket.send: Map of adressables is available");
 
-        Gson gson = new Gson();
-        Message m = gson.fromJson(data, Message.class);
+        Message m = Message.jsonToMessage(data);
 
         Adressable adressable = loadBalanceAdressables(m);
 
