@@ -16,6 +16,26 @@ public class Message {
     public static final String OK = "OK";
     public static final String NOK = "NOK";
     public static final String ERROR = "ERROR";
+
+    public static final String ROUTER_TYPE = "ROUTER";
+    public static final String REGISTRY_TYPE = "REGISTRY";
+    public static final String GATEWAY_TYPE = "GATEWAY";
+    public static final String HTTP_GATEWAY_TYPE = "HTTP_GATEWAY";
+    public static final String AGENT_TYPE = "AGENT";
+    public static final String CONFIG_TYPE = "CONFIG";
+
+    public static final String SUBSCRIBE_COMMAND = "SUBSCRIBE";
+    public static final String UNSUBSCRIBE_COMMAND = "UNSUBSCRIBE";
+    public static final String REGISTRY_GETMAP_COMMAND = "GETMAP";
+    public static final String GET_CONFIG_COMMAND = "GET_CONFIG";
+
+    public static final String SUBSCRIBE_ACK = "SUBSCRIBE_ACK";
+    public static final String UNSUBSCRIBE_ACK = "UNSUBSCRIBE_ACK";
+    public static final String SUBSCRIBE_NACK = "SUBSCRIBE_NACK";
+    public static final String UNSUBSCRIBE_NACK = "UNSUBSCRIBE_NACK";
+
+
+
     public static final int BUFFER_SIZE = 4048;
 
     private String path;

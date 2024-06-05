@@ -31,6 +31,11 @@
             <artifactId>agent-api</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>ma.micronet</groupId>
+            <artifactId>registry-api</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

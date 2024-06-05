@@ -1,6 +1,6 @@
 package ma.micronet.registry.api;
 
-import ma.micronet.commons.Config;
+import ma.micronet.config.api.Config;
 
 public class RegistryFactory {
 
@@ -11,6 +11,7 @@ public class RegistryFactory {
         Registry registry = new Registry();
         registry.setHost(host);
         registry.setPort(port);
+        registry.setMapRenewFrequency(Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 5L);
 
         return registry;
     }

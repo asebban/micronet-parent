@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.PortGenerator;
+import ma.micronet.config.api.Config;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +20,8 @@ public class RouterFactory {
         Router router = new Router();
         router.setPort(PortGenerator.getInstance().generatePort());
         router.setPingPort(PortGenerator.getInstance().generatePort());
-        router.setType(Router.ROUTER_TYPE);
+        router.setType(Message.ROUTER_TYPE);
+        router.setMapRenewFrequency(Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")));
         logger.debug("Router Factory: Created a new router with port: " + router.getPort());
 
         try {        

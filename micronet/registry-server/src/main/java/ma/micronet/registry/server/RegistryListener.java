@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.Adressable;
-import ma.micronet.commons.Config;
 import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Pinger;
+import ma.micronet.config.api.Config;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.registry.api.RegistryFactory;
 
@@ -33,6 +33,7 @@ public class RegistryListener implements IListener {
         logger.info("Starting RegistryListener");
         Registry registry = RegistryFactory.createRegistry();
 
+        registry.setMapRenewFrequency(Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 3);
         ////////////////////////////////////
         // Handle SIGINT interruption signal
         ////////////////////////////////////

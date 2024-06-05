@@ -8,7 +8,7 @@
             "type": "java",
             "name": "Current File",
             "request": "launch",
-            "mainClass": "ma.micronet.agent.server.AgentApplication"
+            "mainClass": "ma.micronet.agent.server.AgentServer"
         }
     ]
 }

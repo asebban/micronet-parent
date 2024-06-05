@@ -8,6 +8,7 @@ public class Adressable {
     private Integer pingPort;
     private String id;
     private Long timestamp;
+    private Long mapRenewFrequency;
 
     public Adressable(String host, Integer port, String type) {
         this.host = host;
@@ -84,6 +85,14 @@ public class Adressable {
         return "Adressable [id=" + id + ", type=" + type + ", path=" + path + ", port=" + port + ", host=" + host + "]";
     }
 
+    public Long getMapRenewFrequency() {
+        return mapRenewFrequency;
+    }
+
+    public void setMapRenewFrequency(Long mapRenewFrequency) {
+        this.mapRenewFrequency = mapRenewFrequency;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         

@@ -18,7 +18,6 @@ import sun.misc.Signal;
 
 public class GatewayListener {
 
-    public static final String GATEWAY_TYPE = "GATEWAY";
     private Logger logger = LoggerFactory.getLogger(GatewayListener.class);
     private Gateway gateway;
 

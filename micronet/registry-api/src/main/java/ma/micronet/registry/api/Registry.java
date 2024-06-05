@@ -3,10 +3,10 @@ package ma.micronet.registry.api;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import ma.micronet.commons.Adressable;
-import ma.micronet.commons.Config;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.UIDGenerator;
+import ma.micronet.config.api.Config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,29 +17,19 @@ import org.slf4j.LoggerFactory;
 
 public class Registry extends Adressable {
 
-    public static final String REGISTRY_GETMAP = "GETMAP";
-    public static final String REGISTRY_TYPE = "REGISTRY";
-    public static final String SUBSCRIBE_COMMAND = "SUBSCRIBE";
-    public static final String UNSUBSCRIBE_COMMAND = "UNSUBSCRIBE";
-    public static final String SUBSCRIBE_ACK = "SUBSCRIBE_ACK";
-    public static final String UNSUBSCRIBE_ACK = "UNSUBSCRIBE_ACK";
-    public static final String SUBSCRIBE_NACK = "SUBSCRIBE_NACK";
-    public static final String UNSUBSCRIBE_NACK = "UNSUBSCRIBE_NACK";
-
-    public static final String GATEWAY_TYPE = "GATEWAY";
     @SuppressWarnings("unused")
     private static Adressable adressable;
 
     private static Logger logger = LoggerFactory.getLogger(Registry.class);
     
     public Registry() {
-        this.setType(REGISTRY_TYPE);
+        this.setType(Message.REGISTRY_TYPE);
         this.setId(UIDGenerator.generateUID());
     }
 
     public Registry(String ip, int port) {
         super(ip, port);
-        this.setType(REGISTRY_TYPE);
+        this.setType(Message.REGISTRY_TYPE);
         this.setId(UIDGenerator.generateUID());
     }
 
@@ -57,7 +47,7 @@ public class Registry extends Adressable {
     public static RegistryMessage createGetMapRegistryRequest(Adressable adressable) throws MicroNetException {
         RegistryMessage m = new RegistryMessage();
         m.setDirection(Message.REQUEST);
-        m.setCommand(Registry.REGISTRY_GETMAP);
+        m.setCommand(Message.REGISTRY_GETMAP_COMMAND);
         if (adressable == null) {
             logger.error("Registry.createGetMapRegistryRequest: Error creating the get map request: Adressable is null");
             throw new MicroNetException("Registry.createGetMapRegistryRequest: Error creating the get map request: Adressable is null");
@@ -84,10 +74,10 @@ public class Registry extends Adressable {
         logger.debug("Subscribing to the registry at " + registryHost + ":" + registryPort);
 
         m.setDirection(Message.REQUEST);
-        m.setCommand(Registry.SUBSCRIBE_COMMAND);
+        m.setCommand(Message.SUBSCRIBE_COMMAND);
         m.setSenderAdressable(a);
         m.setSenderType(a.getType());
-        m.setTargetType(Registry.REGISTRY_TYPE);
+        m.setTargetType(Message.REGISTRY_TYPE);
         
         Gson gson = new GsonBuilder().setLenient().create();
         String adressable = gson.toJson(a);
@@ -148,7 +138,7 @@ public class Registry extends Adressable {
                 
                 logger.debug("Response JSON: " + jsonResponse);
     
-                if (responseMessage.getCommand().equals(Registry.SUBSCRIBE_ACK)) {
+                if (responseMessage.getCommand().equals(Message.SUBSCRIBE_ACK)) {
                     logger.debug("Registry: Subscribed to the registry");
                     isSubscribed = true;
                 } else {
@@ -183,10 +173,10 @@ public class Registry extends Adressable {
         logger.debug("Unsubscribing from the registry at " + registryHost + ":" + registryPort);
 
         m.setDirection(Message.REQUEST);
-        m.setCommand(Registry.UNSUBSCRIBE_COMMAND);
+        m.setCommand(Message.UNSUBSCRIBE_COMMAND);
         m.setSenderType(a.getType());
         m.setSenderAdressable(a);
-        m.setTargetType(Registry.REGISTRY_TYPE);
+        m.setTargetType(Message.REGISTRY_TYPE);
         
         Gson gson = new Gson();
         String adressable = gson.toJson(a);
@@ -223,7 +213,7 @@ public class Registry extends Adressable {
                 String response = new String(buffer, "UTF-8");
                 logger.debug("Registry: Response read from the registry for unsubscribing");
                 RegistryMessage responseMessage = gson.fromJson(response, RegistryMessage.class);
-                if (responseMessage.getResponseCode().equals(Registry.UNSUBSCRIBE_ACK)) {
+                if (responseMessage.getResponseCode().equals(Message.UNSUBSCRIBE_ACK)) {
                     logger.debug("Unsubscribed to the registry");
                     isUnsubscribed = true;
                 } else {

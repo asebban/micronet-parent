@@ -9,11 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.Adressable;
-import ma.micronet.commons.Config;
-import ma.micronet.commons.ConfigReader;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.UIDGenerator;
+import ma.micronet.config.api.Config;
+import ma.micronet.config.api.ConfigReader;
 import ma.micronet.gateway.api.Gateway;
 import ma.micronet.gateway.api.GatewayConnection;
 import sun.misc.SignalHandler;
@@ -21,8 +21,6 @@ import sun.misc.Signal;
 
 public class HttpGateway {
 
-    public static final String HTTP_GATEWAY_TYPE = "HTTP_GATEWAY";
-    public static final String AGENT_TYPE = "AGENT";
     private static Adressable httpGateway;
 
     private static Logger logger = LoggerFactory.getLogger(HttpGateway.class);
@@ -45,7 +43,7 @@ public class HttpGateway {
         Signal.handle(new Signal("INT"), handler);
 
         ConfigReader.getInstance().readProperties();
-        int port = Integer.parseInt(Config.getInstance().getProperty("server.port"));
+        int port = Integer.parseInt(Config.getInstance().getProperty("http.server.port"));
         port(port); // Set the port on which the server listens
 
 
@@ -73,7 +71,7 @@ public class HttpGateway {
             Message m = new Message();
             m.setPath(path);
             m.setSenderAdressable(httpGateway);
-            m.setSenderType(HTTP_GATEWAY_TYPE);
+            m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.GET);
 
@@ -109,7 +107,7 @@ public class HttpGateway {
             Message m = new Message();
             m.setPath(path);
             m.setSenderAdressable(httpGateway);
-            m.setSenderType(HTTP_GATEWAY_TYPE);
+            m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.ADD);
 
@@ -145,7 +143,7 @@ public class HttpGateway {
             Message m = new Message();
             m.setPath(path);
             m.setSenderAdressable(httpGateway);
-            m.setSenderType(HTTP_GATEWAY_TYPE);
+            m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.UPDATE);
 
@@ -183,7 +181,7 @@ public class HttpGateway {
             Message m = new Message();
             m.setPath(path);
             m.setSenderAdressable(httpGateway);
-            m.setSenderType(HTTP_GATEWAY_TYPE);
+            m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.DELETE);
 
@@ -212,8 +210,8 @@ public class HttpGateway {
     private static Adressable getAdressable() throws UnknownHostException {
         Adressable adressable = new Adressable();
         adressable.setHost(Config.getInstance().getCurrentHost());
-        adressable.setPort(Integer.parseInt(Config.getInstance().getProperty("server.port")));
-        adressable.setType(HTTP_GATEWAY_TYPE);
+        adressable.setPort(Integer.parseInt(Config.getInstance().getProperty("http.server.port")));
+        adressable.setType(Message.HTTP_GATEWAY_TYPE);
         adressable.setId(UIDGenerator.generateUID());
         return adressable;
     }

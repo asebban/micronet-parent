@@ -1,4 +1,4 @@
-package ma.micronet.gateway.api;
+package ma.micronet.config.api;
 
 import java.io.IOException;
 
@@ -10,11 +10,11 @@ import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Connection;
 import ma.micronet.commons.networking.MicroNetSocket;
 
-public class GatewayConnection extends Connection {
+public class ConfigManagerConnection extends  Connection {
 
-    private Logger logger = LoggerFactory.getLogger(GatewayConnection.class);
-
-    public GatewayConnection(Adressable adressable) throws MicroNetException, IOException {
+    private Logger logger = LoggerFactory.getLogger(ConfigManagerConnection.class);
+    
+    public ConfigManagerConnection(Adressable adressable) throws MicroNetException, IOException {
         super(adressable);
     }
 

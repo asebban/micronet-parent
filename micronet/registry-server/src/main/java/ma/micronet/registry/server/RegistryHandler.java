@@ -65,15 +65,15 @@ public class RegistryHandler implements Runnable {
 
         logger.debug("RegistryHandler: Processing message: " + message.toString());
         switch(message.getCommand()) {
-            case Registry.SUBSCRIBE_COMMAND:
+            case Message.SUBSCRIBE_COMMAND:
                 logger.info("RegistryHandler: Subscribing service " + (sender != null ? sender : ""));
                 response = subscribe(message);
                 break;
-            case Registry.UNSUBSCRIBE_COMMAND:
+            case Message.UNSUBSCRIBE_COMMAND:
                 logger.info("RegistryHandler: Unsubscribing service " + (sender != null ? sender : ""));
                 response = unsubscribe(message);
                 break;
-            case Registry.REGISTRY_GETMAP:
+            case Message.REGISTRY_GETMAP_COMMAND:
                 logger.info("RegistryHandler: Answering getMap command for service " + (sender != null ? sender : ""));
                 response = getMap(message);
                 break;
@@ -118,9 +118,9 @@ public class RegistryHandler implements Runnable {
 
     private Message createSubscribeAckMessage(Message request) {
         Message response = new Message();
-        response.setCommand(Registry.SUBSCRIBE_ACK);
+        response.setCommand(Message.SUBSCRIBE_ACK);
         response.setDirection(Message.RESPONSE);
-        response.setSenderType(Registry.REGISTRY_TYPE);
+        response.setSenderType(Message.REGISTRY_TYPE);
         response.setSenderId(registry.getId());
         response.setTargetType(request.getSenderType());
         response.setResponseCode(Message.OK);
@@ -129,9 +129,9 @@ public class RegistryHandler implements Runnable {
 
     private Message createUnsubscribeAckMessage(Message request) {
         Message response = new Message();
-        response.setCommand(Registry.UNSUBSCRIBE_ACK);
+        response.setCommand(Message.UNSUBSCRIBE_ACK);
         response.setDirection(Message.RESPONSE);
-        response.setSenderType(Registry.REGISTRY_TYPE);
+        response.setSenderType(Message.REGISTRY_TYPE);
         response.setSenderId(registry.getId());
         response.setTargetType(request.getSenderType());
         response.setResponseCode(Message.OK);
@@ -140,9 +140,9 @@ public class RegistryHandler implements Runnable {
 
     private Message createGetMapMessage(Message request, Map<String, List<Adressable>> registryMap) {
         Message response = Message.copy(request);
-        response.setCommand(Registry.REGISTRY_GETMAP);
+        response.setCommand(Message.REGISTRY_GETMAP_COMMAND);
         response.setDirection(Message.RESPONSE);
-        response.setSenderType(Registry.REGISTRY_TYPE);
+        response.setSenderType(Message.REGISTRY_TYPE);
         response.setSenderId(registry.getId());
         response.setTargetType(request.getSenderType());
         Gson gson = new Gson();
@@ -156,7 +156,7 @@ public class RegistryHandler implements Runnable {
         Message response = Message.copy(request);
         response.setResponseCode(Message.ERROR);
         response.setDirection(Message.RESPONSE);
-        response.setSenderType(Registry.REGISTRY_TYPE);
+        response.setSenderType(Message.REGISTRY_TYPE);
         response.setSenderId(registry.getId());
         response.setTargetType(request.getSenderType());
         response.setPayLoad(errorMessage);

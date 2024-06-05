@@ -4,12 +4,12 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ma.micronet.commons.ConfigReader;
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.config.api.ConfigReader;
 
-public class AgentApplication {
+public class AgentServer {
 
-    private static Logger logger = LoggerFactory.getLogger(AgentApplication.class);
+    private static Logger logger = LoggerFactory.getLogger(AgentServer.class);
 
     public static void main(String[] args) {
         try {

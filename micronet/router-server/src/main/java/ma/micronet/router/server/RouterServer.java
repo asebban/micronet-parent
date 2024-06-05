@@ -2,10 +2,10 @@ package ma.micronet.router.server;
 
 import java.io.IOException;
 
-import ma.micronet.commons.ConfigReader;
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.config.api.ConfigReader;
 
-public class RouterApplication {
+public class RouterServer {
 
     public static void main(String[] args) throws MicroNetException, IOException {
 

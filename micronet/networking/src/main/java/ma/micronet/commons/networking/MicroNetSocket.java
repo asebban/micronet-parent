@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import ma.micronet.commons.Adressable;
-import ma.micronet.commons.Config;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 
@@ -36,17 +35,18 @@ public class MicroNetSocket {
         this.socket = new Socket(host, port);
     }
 
-    /**
-     * @param socket : Socket object opened previously
-     */
-    public MicroNetSocket(Socket socket) {
-        this.socket = socket;
-    }
-
     public MicroNetSocket(Adressable adressable) throws MicroNetException, IOException {
         this.adressable = adressable;
     }
 
+    public void connect(String host, int port) throws IOException {
+        if (this.socket == null || this.socket.isClosed()) {
+            throw new IOException("Socket is null or closed");
+        }
+
+        this.socket = new Socket(host, port);
+    }
+    
     public void connect() throws MicroNetException, IOException {
 
         if (this.adressable != null && MicroNetMapRenewer.getInstance(this.adressable).getMap() != null && MicroNetMapRenewer.getInstance(this.adressable).getMap().size() > 0) {
@@ -54,28 +54,11 @@ public class MicroNetSocket {
             return;
         }
 
-        String host = Config.getInstance().getProperty("registry.host").trim();
-        int port = Integer.parseInt(Config.getInstance().getProperty("registry.port"));
-
-        if (host == null || port == 0) {
-            logger.error("MicroNetSocket.connect: Registry host or port not set in the configuration file");
-            throw new MicroNetException("Registry host or port not set in the configuration file");
-        }
-
         if (this.adressable == null) {
-            if (this.socket == null) {
-                this.socket = new Socket(host, port);
-                logger.debug("Registry host " + host + " reached on port " + port);
-                return;
-            }
-            else {
-                // this is the case of a socket that has been opened previously
-                return;
-            }
+            throw new MicroNetException("MicroNetSocket.connect: adressable was not provided");
         }
 
         // Here type is set
-        logger.debug("registry host '" + host + "' reached on port " + port + ", calling map renewer");
         MicroNetMapRenewer.getInstance(this.adressable).renewMap();
     }
 

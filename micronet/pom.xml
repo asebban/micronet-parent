@@ -19,6 +19,8 @@
         <module>registry-server</module>
         <module>router-api</module>
         <module>router-server</module>
+        <module>config-server</module>
+        <module>config-api</module>
     </modules>
 
     <dependencyManagement>

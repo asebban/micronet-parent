@@ -8,11 +8,8 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import ma.micronet.commons.Adressable;
-import ma.micronet.commons.Config;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
-import ma.micronet.registry.api.Registry;
-import ma.micronet.registry.api.RegistryMessage;
 
 import java.util.List;
 import java.io.IOException;
@@ -45,7 +42,7 @@ public class MicroNetMapRenewer {
         this.map = new HashMap<>();
         this.adressable = adressable;
 
-        long frequency = Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 3;
+        long frequency = adressable.getMapRenewFrequency() != null ? adressable.getMapRenewFrequency() : 3;
 
         executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
@@ -69,24 +66,21 @@ public class MicroNetMapRenewer {
 
         Socket registrySocket = null;
 
-        String host = Config.getInstance().getProperty("registry.host"); // Retrieve the registry host from Config
-        int port = Integer.parseInt(Config.getInstance().getProperty("registry.port"));
-
-        if (host == null || port == 0) {
+        if (adressable.getHost() == null || adressable.getPort() == 0) {
             logger.error("Registry host or port not set in the configuration file");
             throw new MicroNetException("Registry host or port not set in the configuration file"); // Throw a MicroNetException if the host or port is not set
         }
 
-        RegistryMessage m = Registry.createGetMapRegistryRequest(this.adressable);
+        Message m = createRegistryGetMapMessage(this.adressable);
         Gson gson = new Gson();
         // convert the message to a JSON string using Gson
         String json = gson.toJson(m);
 
         try {
-            registrySocket = new Socket(host, port); // Connect to the Registry
+            registrySocket = new Socket(adressable.getHost(), adressable.getPort()); // Connect to the Registry
         } catch (IOException e) {
-            logger.error(host + ":" + port + " is not reachable");
-            throw new MicroNetException(host + ":" + port + " is not reachable", e); // Throw a MicroNetException if the connection fails
+            logger.error(adressable.getHost() + ":" + adressable.getPort() + " is not reachable");
+            throw new MicroNetException(adressable.getHost() + ":" + adressable.getPort() + " is not reachable", e); // Throw a MicroNetException if the connection fails
         }
 
         InputStream is = registrySocket.getInputStream();
@@ -128,7 +122,7 @@ public class MicroNetMapRenewer {
         try {
             response = response.trim();
             logger.debug("Response received from registry: " + response);
-            RegistryMessage registryMessage = gson.fromJson(response, RegistryMessage.class);
+            Message registryMessage = gson.fromJson(response, Message.class);
             String payLoad = registryMessage.getPayLoad();
             payLoad = payLoad.trim();
             logger.debug("Payload received from registry: " + payLoad);
@@ -196,5 +190,13 @@ public class MicroNetMapRenewer {
             list.add(adressable);
         }
         return list;
+    }
+    public static Message createRegistryGetMapMessage(Adressable adressable) {
+        Message m = new Message();
+        m.setSenderAdressable(adressable);
+        m.setSenderType(adressable.getType());
+        m.setDirection(Message.REQUEST);
+        m.setCommand(Message.REGISTRY_GETMAP_COMMAND);
+        return m;
     }
 }

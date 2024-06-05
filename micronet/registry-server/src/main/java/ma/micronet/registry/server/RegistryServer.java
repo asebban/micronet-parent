@@ -4,17 +4,17 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ma.micronet.commons.ConfigReader;
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.config.api.ConfigReader;
 
-public class RegistryApplication {
+public class RegistryServer {
 
-    private static Logger logger = LoggerFactory.getLogger(RegistryApplication.class);
+    private static Logger logger = LoggerFactory.getLogger(RegistryServer.class);
     
     public static void main(String[] args) throws MicroNetException {
 
         try {
-            ConfigReader.getInstance().readProperties();
+            ConfigReader.getInstance().readLocalProperties();
         } catch (MicroNetException e) {
             logger.error("Error reading properties file: " + e.getMessage());
             e.printStackTrace();
