@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 import ma.micronet.commons.Adressable;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ma.micronet.commons.PropertiesReader;
 
 public class MicroNetMapRenewer {
 
@@ -37,13 +37,18 @@ public class MicroNetMapRenewer {
     private Adressable adressable;
     private String registryHost;
     private int registryPort;
+    private Properties localProperties;
 
-    private MicroNetMapRenewer(Adressable adressable) {
+    private MicroNetMapRenewer(Adressable adressable) throws MicroNetException, IOException {
 
         this.map = new HashMap<>();
         this.adressable = adressable;
 
-        long frequency = adressable.getMapRenewFrequency() != null ? adressable.getMapRenewFrequency() : 3;
+        PropertiesReader.readProperties();
+
+        this.localProperties = PropertiesReader.getProperties();
+
+        long frequency = localProperties.getProperty("map.renewer.frequency") != null ? Long.parseLong(localProperties.getProperty("map.renewer.frequency")): 3;
 
         executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
@@ -56,7 +61,7 @@ public class MicroNetMapRenewer {
 
     }
 
-    public static MicroNetMapRenewer getInstance(Adressable adressable) {
+    public static MicroNetMapRenewer getInstance(Adressable adressable) throws MicroNetException, IOException {
         if (instance == null) {
             instance = new MicroNetMapRenewer(adressable);
         }
@@ -67,7 +72,18 @@ public class MicroNetMapRenewer {
 
         Socket registrySocket = null;
 
-        readRegistryConfig();
+        if (PropertiesReader.getProperties() == null) {
+            PropertiesReader.readProperties();
+        }
+        localProperties = PropertiesReader.getProperties();
+
+        registryHost = localProperties.getProperty("registry.host");
+        try {
+            registryPort = Integer.parseInt(localProperties.getProperty("registry.port"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw new MicroNetException("registry.port property not found in application.properties file or not a number. Unable to know the registry port", e);
+        }
 
         if (registryHost == null || registryPort == 0) {
             logger.error("Registry host or port not set in the configuration file");
@@ -177,24 +193,7 @@ public class MicroNetMapRenewer {
         instance.executor.shutdown();
     }
 
-    @SuppressWarnings("unused")
-    private List<Adressable> convertLinkedTreeMapToList(@SuppressWarnings("rawtypes") LinkedTreeMap<String, LinkedTreeMap> linkedTreeMap) {
-        List<Adressable> list = new ArrayList<>();
-        for (String key : linkedTreeMap.keySet()) {
-            Adressable adressable = new Adressable();
-            @SuppressWarnings("unchecked")
-            LinkedTreeMap<String, String> value = linkedTreeMap.get(key);
-            adressable.setHost(value.get("host"));
-            adressable.setPort(Integer.parseInt(value.get("port")));
-            adressable.setPath(value.get("path"));
-            adressable.setType(value.get("type"));
-            adressable.setId(value.get("id"));
-            adressable.setPingPort(value.get("pingPort") != null ? Integer.parseInt(value.get("pingPort")) : 0);
-            list.add(adressable);
-        }
-        return list;
-    }
-    public static Message createRegistryGetMapMessage(Adressable adressable) {
+     public static Message createRegistryGetMapMessage(Adressable adressable) {
         Message m = new Message();
         m.setSenderAdressable(adressable);
         m.setSenderType(adressable.getType());
@@ -203,25 +202,4 @@ public class MicroNetMapRenewer {
         return m;
     }
 
-    private void readRegistryConfig() throws MicroNetException, IOException {
-        Properties props = new Properties();
-        InputStream is = MicroNetMapRenewer.class.getClassLoader().getResourceAsStream("application.properties");
-        if (is == null) {
-            logger.error("application.properties file not found in the classpath. Unable to know the registry host and port");
-            throw new MicroNetException("application.properties file not found in the classpath. Unable to know the registry host and port");
-        }
-        props.load(is);
-        this.registryHost = props.getProperty("registry.host");
-        if (this.registryHost == null) {
-            logger.error("registry.host property not found in application.properties file. Unable to know the registry host");
-            throw new MicroNetException("registry.host property not found in application.properties file. Unable to know the registry host");
-        }
-        try {
-            this.registryPort = Integer.parseInt(props.getProperty("registry.port"));
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            throw new MicroNetException("registry.port property not found in application.properties file or not a number. Unable to know the registry port", e);
-        }
-
-    }
 }

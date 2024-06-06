@@ -1,7 +1,6 @@
 package ma.micronet.config.api;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -9,101 +8,69 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import ma.micronet.commons.Adressable;
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
-
-import java.net.MalformedURLException;
-import java.net.URL;
+import ma.micronet.commons.PropertiesReader;
 
 public class ConfigReader {
 
     // singleton
 
     private Logger logger = LoggerFactory.getLogger(ConfigReader.class);
-    private Properties props = new Properties();
     private static ConfigReader instance = null;
+    private Adressable adressable;
 
-    private ConfigReader() {
+    private ConfigReader(Adressable adressable) {
+        this.adressable = adressable;
     }
 
-    public static ConfigReader getInstance() {
+    public static ConfigReader getInstance(Adressable adressable) {
         if (instance == null) {
-            instance = new ConfigReader();
+            instance = new ConfigReader(adressable);
         }
         return instance;
     }
     
     public void readProperties() throws MicroNetException, IOException {
 
-        // temporary map to load properties
-        Properties properties = new Properties();
-        
-        // Loading the properties file from the classpath
-        InputStream input = ConfigReader.class.getClassLoader().getResourceAsStream("application.properties");
-        if (input == null) {
-            logger.debug("Unable to find application.properties");
-        } else {
-            // Load the properties file
-            properties.load(input);
+        PropertiesReader.readProperties();
+        readServerProperties();
+
+        Config.getInstance().setProps(PropertiesReader.getProperties());
+    }
+
+    public void readServerProperties() throws MicroNetException, IOException {
+
+        boolean configServerEnabled = Boolean.parseBoolean(Config.getInstance().getProperty("config.server.enabled") == null ? "false" : Config.getInstance().getProperty("config.server.enabled"));
+
+        if (!configServerEnabled) {
+            // don't continue if config server not enabled
+            return;
         }
-
-        // Override file properties with environment variable property if a conflict occurs
-        if (System.getenv("CONFIG_SOURCE_URL") != null) {
-            properties.setProperty("config.source.url", System.getenv("CONFIG_SOURCE_URL"));
-        }
-
-        String configSourceUrl = properties.getProperty("config.source.url");
-        
-        URL url=null;
-        try {
-            url = new URL(configSourceUrl);
-            input = url.openStream();
-            Properties p = new Properties();
-            p.load(input);
-            properties.putAll(p);
-        } catch (MalformedURLException e) {
-            logger.error("ConfigReader: Error while creating the URL object from config source: " + e.getMessage() + ". May be the config source is not not declared or not well formed");
-        }
-        input.close();
-
-        
-        Properties p = Configuration.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
-        properties.putAll(p); // Override file properties with command line properties if a conflict occurs
-
-        // Override properties with environment variables if a conflict occurs
-        properties.forEach((key, value) -> {
-            logger.debug("ConfigReader.readProperties: Property read from conf file or cmd line " + key + " = " + value);
-            String envName = ((String) key).replaceAll("\\.", "_").toUpperCase();
-            if (System.getenv(envName) != null) {
-                logger.debug("Overriding property " + key + " with environment variable " + envName + " which vallue is " + System.getenv(envName));
-                value = System.getenv(envName);
-            }
-
-            props.setProperty((String) key, (String) value);
-        });
-
-        Config.getInstance().setProps(props);
 
         // Finally, get properties from config server (the most prioritary source)
-        Configuration configManager = new Configuration();
+        Configuration configuration = new Configuration();
         Message request = new Message();
         
         request.setCommand(Message.GET_CONFIG_COMMAND);
-        request.setSenderAdressable(configManager);
+        request.setSenderAdressable(adressable);
         request.setDirection(Message.REQUEST);
-        request.setTargetAdressable(configManager);
+        request.setTargetAdressable(configuration);
+        request.setSenderType(configuration.getType());
 
-        ConfigurationConnection connection = configManager.createConnection();
+        ConfigurationConnection configurationConnection = configuration.createConnection();
 
         Boolean isConfigServerReached = false;
         int authorizedAttempts = 5;
         Message response = null;
-        Long reconnectInterval=(properties.get("config.reconnect.interval") != null ? Long.parseLong((String)properties.get("config.reconnect.interval")) : 5L);
+
+        Long reconnectInterval=(Config.getInstance().getProperty("config.reconnect.interval") != null ? Long.parseLong((String)Config.getInstance().getProperty("config.reconnect.interval")) : 10L);
 
         while(!isConfigServerReached && authorizedAttempts > 0) {
             try {
-                connection.connect();
-                response = connection.sendSync(request);
+                configurationConnection.connect();
+                response = configurationConnection.sendSync(request);
                 isConfigServerReached = true;
             } catch (MicroNetException e) {
                 authorizedAttempts--;
@@ -117,7 +84,7 @@ public class ConfigReader {
         }
 
         if (authorizedAttempts == 0) {
-            logger.error("ConfigReader: number of attempts exhausted while connecting to the config server. Using local properties only.");
+            logger.debug("ConfigReader: number of attempts exhausted while connecting to the config server. Using local properties only.");
             return;
         }
 
@@ -125,69 +92,11 @@ public class ConfigReader {
             Gson gson = new Gson();
             String payload = response.getPayLoad();
             Properties serverProps = gson.fromJson(payload, Properties.class);
-            props.putAll(serverProps);
+            PropertiesReader.getProperties().putAll(serverProps);
+
             logger.debug("ConfigReader: Properties from the config server loaded successfully.");
         } else {
             logger.error("ConfigReader: Error while getting properties from the config server. Using local properties only.");
         }
-
-        Config.getInstance().setProps(props);
     }
-
-    public void readLocalProperties() throws MicroNetException, IOException {
-
-        // temporary map to load properties
-        Properties properties = new Properties();
-        
-        // Loading the properties file from the classpath
-        InputStream input = ConfigReader.class.getClassLoader().getResourceAsStream("application.properties");
-        if (input == null) {
-            logger.debug("Unable to find application.properties");
-        } else {
-            // Load the properties file
-            properties.load(input);
-        }
-
-        // Override file properties with environment variable property if a conflict occurs
-        if (System.getenv("CONFIG_SOURCE_URL") != null) {
-            properties.setProperty("config.source.url", System.getenv("CONFIG_SOURCE_URL"));
-        }
-
-        String configSourceUrl = properties.getProperty("config.source.url");
-        
-        URL url=null;
-        try {
-            url = new URL(configSourceUrl);
-            input = url.openStream();
-            Properties p = new Properties();
-            p.load(input);
-            properties.putAll(p);
-        } catch (MalformedURLException e) {
-            logger.error("ConfigReader: Error while creating the URL object from config source: " + e.getMessage() + ". May be the config source is not declared or not well formed. Using properties in the application.properties file ...");
-        }
-        input.close();
-
-        
-        Properties p = Configuration.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
-
-        if (p != null && p.size() > 0) {
-            logger.debug("Adding properties from command line: " + p);
-            properties.putAll(p); // Override file properties with command line properties if a conflict occurs
-        }
-
-        // Override properties with environment variables if a conflict occurs
-        properties.forEach((key, value) -> {
-            logger.debug("ConfigReader.readProperties: Property read from conf file or cmd line " + key + " = " + value);
-            String envName = ((String) key).replaceAll("\\.", "_").toUpperCase();
-            if (System.getenv(envName) != null) {
-                logger.debug("Overriding property " + key + " with environment variable " + envName + " which vallue is " + System.getenv(envName));
-                value = System.getenv(envName);
-            }
-
-            props.setProperty((String) key, (String) value);
-        });
-
-        Config.getInstance().setProps(props);
-    }
-
 }

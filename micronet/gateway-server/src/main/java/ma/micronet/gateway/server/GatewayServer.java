@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.MicroNetException;
-import ma.micronet.config.api.ConfigReader;
 
 public class GatewayServer {
 
@@ -13,7 +12,6 @@ public class GatewayServer {
 
     public static void main(String[] args) {
         try {
-            ConfigReader.getInstance().readProperties();
             logger.debug("GatewayApplication: configuration read successfully");
             GatewayListener gatewayListener = new GatewayListener();
             gatewayListener.start();

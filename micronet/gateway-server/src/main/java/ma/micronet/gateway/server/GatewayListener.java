@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.commons.networking.PingListener;
+import ma.micronet.config.api.ConfigReader;
 import ma.micronet.gateway.api.Gateway;
 import ma.micronet.gateway.api.GatewayFactory;
 import ma.micronet.registry.api.Registry;
@@ -24,6 +25,8 @@ public class GatewayListener {
     public void start() throws MicroNetException, IOException {
 
         this.gateway = GatewayFactory.createGateway();
+        ConfigReader.getInstance(gateway).readProperties();
+
         logger.debug("GatewayListener: Subscribing the gateway " + gateway.getId() + " to the registry");
         Registry.subscribe(this.gateway);
         logger.debug("GatewayListener: Gateway " + gateway.getId() + "subscribed to the registry");

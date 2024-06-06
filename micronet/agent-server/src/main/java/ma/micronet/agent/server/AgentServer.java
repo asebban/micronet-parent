@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.MicroNetException;
-import ma.micronet.config.api.ConfigReader;
 
 public class AgentServer {
 
@@ -13,7 +12,6 @@ public class AgentServer {
 
     public static void main(String[] args) {
         try {
-            readProperties();
             AgentListener agentListener = new AgentListener();
             agentListener.start();
         } catch (IOException e) {
@@ -27,8 +25,4 @@ public class AgentServer {
         } 
     }
 
-    private static void readProperties() throws IOException, MicroNetException{
-        // Loading the properties file from the classpath
-        ConfigReader.getInstance().readProperties();
-    }
 }

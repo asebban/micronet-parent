@@ -11,6 +11,7 @@ import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.commons.networking.PingListener;
+import ma.micronet.config.api.ConfigReader;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.router.api.Router;
 import ma.micronet.router.api.RouterFactory;
@@ -32,6 +33,15 @@ public class RouterListener implements IListener {
             logger.error("Router Listener: Error creating the router: " + e.getMessage());
             e.printStackTrace();
         }
+
+        try {
+            ConfigReader.getInstance(router).readProperties();
+        } catch (MicroNetException | IOException e) {
+            logger.error("RouterListener.start: Could not read config properties");
+            e.printStackTrace();
+            System.exit(2);
+        }
+
 
         logger.debug("Router Listener: Subscribing the router to the registry -> " + router);
         Registry.subscribe(router);

@@ -12,6 +12,7 @@ import ma.micronet.agent.api.AgentProcessorFactory;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.MicroNetMapRenewer;
 import ma.micronet.commons.networking.PingListener;
+import ma.micronet.config.api.ConfigReader;
 import ma.micronet.registry.api.Registry;
 import sun.misc.SignalHandler;
 import sun.misc.Signal;
@@ -24,6 +25,9 @@ public class AgentListener {
     public void start() throws MicroNetException, IOException {
         
         processor = AgentProcessorFactory.findProcessorInstance();
+
+        ConfigReader.getInstance(processor.getAgent()).readProperties();
+        
         Registry.subscribe(processor.getAgent());
         logger.debug("Agent Listener: Subscribed the agent " + processor.getAgent() + " to the registry");
         //new Thread(new PingListener(processor.getAgent())).start();

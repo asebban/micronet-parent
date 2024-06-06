@@ -8,9 +8,11 @@ import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Pinger;
 import ma.micronet.config.api.Config;
+import ma.micronet.config.api.ConfigReader;
 import ma.micronet.registry.api.Registry;
 import ma.micronet.registry.api.RegistryFactory;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import sun.misc.SignalHandler;
@@ -30,10 +32,17 @@ public class RegistryListener implements IListener {
     @Override
     public void start() throws MicroNetException {
 
+        try {
+            ConfigReader.getInstance(new Registry()).readProperties();
+        } catch (MicroNetException | IOException e) {
+            logger.error("Error reading properties file: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         logger.info("Starting RegistryListener");
         Registry registry = RegistryFactory.createRegistry();
 
-        registry.setMapRenewFrequency(Config.getInstance().getProperty("map.renewer.frequency") != null ? Long.parseLong(Config.getInstance().getProperty("map.renewer.frequency")) : 3);
         ////////////////////////////////////
         // Handle SIGINT interruption signal
         ////////////////////////////////////

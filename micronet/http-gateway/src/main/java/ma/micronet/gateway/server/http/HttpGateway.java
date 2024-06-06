@@ -21,8 +21,6 @@ import sun.misc.Signal;
 
 public class HttpGateway {
 
-    private static Adressable httpGateway;
-
     private static Logger logger = LoggerFactory.getLogger(HttpGateway.class);
 
     // wait for a http request
@@ -42,7 +40,10 @@ public class HttpGateway {
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
 
-        ConfigReader.getInstance().readProperties();
+        Adressable httpGateway = new Adressable();
+        httpGateway.setType(Message.HTTP_GATEWAY_TYPE);
+
+        ConfigReader.getInstance(httpGateway).readProperties();
         int port = Integer.parseInt(Config.getInstance().getProperty("http.server.port"));
         port(port); // Set the port on which the server listens
 
@@ -70,7 +71,6 @@ public class HttpGateway {
             
             Message m = new Message();
             m.setPath(path);
-            m.setSenderAdressable(httpGateway);
             m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.GET);
@@ -106,7 +106,6 @@ public class HttpGateway {
             
             Message m = new Message();
             m.setPath(path);
-            m.setSenderAdressable(httpGateway);
             m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.ADD);
@@ -142,7 +141,6 @@ public class HttpGateway {
             
             Message m = new Message();
             m.setPath(path);
-            m.setSenderAdressable(httpGateway);
             m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.UPDATE);
@@ -180,7 +178,6 @@ public class HttpGateway {
             
             Message m = new Message();
             m.setPath(path);
-            m.setSenderAdressable(httpGateway);
             m.setSenderType(Message.HTTP_GATEWAY_TYPE);
             m.setDirection(Message.REQUEST);
             m.setCommand(Message.DELETE);
