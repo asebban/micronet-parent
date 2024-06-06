@@ -35,8 +35,8 @@ public class ConfigReader {
     public void readProperties() throws MicroNetException, IOException {
 
         PropertiesReader.readProperties();
+        Config.getInstance().setProps(PropertiesReader.getProperties());
         readServerProperties();
-
         Config.getInstance().setProps(PropertiesReader.getProperties());
     }
 
@@ -46,6 +46,7 @@ public class ConfigReader {
 
         if (!configServerEnabled) {
             // don't continue if config server not enabled
+            logger.debug("ConfigReader: Config server is not enabled. Using local properties only.");
             return;
         }
 
