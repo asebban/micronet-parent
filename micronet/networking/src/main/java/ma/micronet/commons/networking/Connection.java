@@ -50,8 +50,7 @@ public abstract class Connection {
 
 
     public Message sendSync(Message message) throws MicroNetException {
-        Gson gson = new Gson();
-        String json = gson.toJson(message);
+        String json = message.toString();
         try {
             this.socket.send(json);
         } catch (MicroNetException e) {
@@ -71,7 +70,7 @@ public abstract class Connection {
         String json;
         try {
             logger.debug("Connection.receive: Receiving message");
-            json = this.socket.recv(2024);
+            json = this.socket.recv(Message.BUFFER_SIZE);
             logger.debug("Connection.receive: Received message: " + json);
         } catch (IOException e) {
             e.printStackTrace();

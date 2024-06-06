@@ -2,6 +2,7 @@ package ma.micronet.gateway.server;
 
 import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
+import ma.micronet.commons.UIDGenerator;
 import ma.micronet.gateway.api.Gateway;
 import ma.micronet.router.api.Router;
 import ma.micronet.router.api.RouterConnection;
@@ -48,6 +49,7 @@ public class GatewayClientHandler implements Runnable{
             Gson gson = new Gson();
             Message message = gson.fromJson(request, Message.class);
             message.setSenderAdressable(gateway);
+            message.setMessageId(UIDGenerator.generateUID());
             
             routerConnection.send(message);
             logger.debug("GatewayClientHandler: Message sent to the router");

@@ -12,9 +12,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-
 import ma.micronet.agent.api.AgentProcessorFactory;
 import ma.micronet.agent.api.IAgentProcessor;
 import ma.micronet.agent.api.IProcessingUnit;
@@ -40,9 +37,10 @@ public class AgentHandler implements Runnable {
             String request = new String(buffer, "UTF-8");
             request = request.trim();
             logger.debug("Agent Handler ID " + processor.getAgent().getId() + ": Received request: " + request);
-            Gson gson = new Gson();
-            Message requestMessage = gson.fromJson(request, Message.class);
+            Message requestMessage = Message.jsonToMessage(request);
+            String messageId = requestMessage.getMessageId();
             Message preProcessedMessage = processor.process(requestMessage);
+            preProcessedMessage.setMessageId(messageId); // restore the original message ID if it was modified
             preProcessedMessage.setSenderAdressable(processor.getAgent());
 
             List<IProcessingUnit> processingUnits = AgentProcessorFactory.findProcessingUnits();
@@ -63,7 +61,9 @@ public class AgentHandler implements Runnable {
                     preProcessedMessage.getParameters().putAll(pathVariables);
                     Map<String, String> queryParameters = extractQueryParameters(messagePath);
                     preProcessedMessage.getParameters().putAll(queryParameters);
+                    String messageID = preProcessedMessage.getMessageId();
                     responseMessage = processingUnit.execute(preProcessedMessage);
+                    responseMessage.setMessageId(messageID); // restore the original message ID if it was modified
                     break;
                 }
             }
@@ -73,7 +73,7 @@ public class AgentHandler implements Runnable {
                 responseMessage = preProcessedMessage;
             }
 
-            String responseString = gson.toJson(responseMessage);
+            String responseString = responseMessage.toString();
             logger.debug("Agent Handler ID " + processor.getAgent().getId() + ": Sending response: " + responseString);
             this.socket.getOutputStream().write(responseString.getBytes());
         } catch (Exception e) {
