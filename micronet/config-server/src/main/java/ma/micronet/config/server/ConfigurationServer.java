@@ -7,16 +7,16 @@ import org.slf4j.LoggerFactory;
 
 import ma.micronet.commons.MicroNetException;
 
-public class ConfigServer {
+public class ConfigurationServer {
 
     public static Properties props;
-    private static Logger logger = LoggerFactory.getLogger(ConfigServer.class);
+    private static Logger logger = LoggerFactory.getLogger(ConfigurationServer.class);
     @SuppressWarnings("unused")
     public static String[] cmdLineArgs;
 
     public static void main(String[] args) throws MicroNetException {
         cmdLineArgs = args;
-        ConfigListener  listener = new ConfigListener();
+        ConfigurationListener  listener = new ConfigurationListener();
         logger.debug("ConfigApplication: Starting ConfigServerListener");
         listener.start();
     }

@@ -14,14 +14,14 @@ import ma.micronet.commons.Message;
 import ma.micronet.commons.MicroNetException;
 import java.util.Properties;
 
-public class ConfigServerHandler implements Runnable{
+public class ConfigurationHandler implements Runnable{
 
     private Socket socket;
     private Adressable configServer;
     private Properties properties;
-    private Logger logger = LoggerFactory.getLogger(ConfigServerHandler.class);
+    private Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
-    public ConfigServerHandler(Socket socket, Adressable configServer, Properties properties) {
+    public ConfigurationHandler(Socket socket, Adressable configServer, Properties properties) {
         this.socket = socket;
         this.configServer = configServer;
         this.properties = properties;

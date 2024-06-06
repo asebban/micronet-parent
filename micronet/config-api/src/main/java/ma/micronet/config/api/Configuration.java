@@ -11,19 +11,19 @@ import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.UIDGenerator;
 import java.util.Properties;
 
-public class ConfigManager extends Adressable{
+public class Configuration extends Adressable{
 
 
-    private static Logger logger = LoggerFactory.getLogger(ConfigManager.class);
+    private static Logger logger = LoggerFactory.getLogger(Configuration.class);
     
-    public ConfigManager() {
+    public Configuration() {
         super();
         setType(Message.CONFIG_TYPE);
         setId(UIDGenerator.generateUID());
     }
 
-    public ConfigManagerConnection createConnection() throws MicroNetException, IOException {
-        ConfigManagerConnection connection = new ConfigManagerConnection(this);
+    public ConfigurationConnection createConnection() throws MicroNetException, IOException {
+        ConfigurationConnection connection = new ConfigurationConnection(this);
         return connection;
     }
 

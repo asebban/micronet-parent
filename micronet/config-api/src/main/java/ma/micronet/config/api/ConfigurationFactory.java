@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.PortGenerator;
 
-public class ConfigManagerFactory {
+public class ConfigurationFactory {
 
-    private static Logger logger = LoggerFactory.getLogger(ConfigManagerFactory.class);
+    private static Logger logger = LoggerFactory.getLogger(ConfigurationFactory.class);
     
-    public static ConfigManager createConfigManager() throws MicroNetException, IOException {
-        ConfigManager configManager = new ConfigManager();
+    public static Configuration createConfigManager() throws MicroNetException, IOException {
+        Configuration configManager = new Configuration();
         configManager.setPort(PortGenerator.getInstance().generatePort());
         configManager.setPingPort(PortGenerator.getInstance().generatePort());
 

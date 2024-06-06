@@ -67,7 +67,7 @@ public class ConfigReader {
         input.close();
 
         
-        Properties p = ConfigManager.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
+        Properties p = Configuration.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
         properties.putAll(p); // Override file properties with command line properties if a conflict occurs
 
         // Override properties with environment variables if a conflict occurs
@@ -85,7 +85,7 @@ public class ConfigReader {
         Config.getInstance().setProps(props);
 
         // Finally, get properties from config server (the most prioritary source)
-        ConfigManager configManager = new ConfigManager();
+        Configuration configManager = new Configuration();
         Message request = new Message();
         
         request.setCommand(Message.GET_CONFIG_COMMAND);
@@ -93,7 +93,7 @@ public class ConfigReader {
         request.setDirection(Message.REQUEST);
         request.setTargetAdressable(configManager);
 
-        ConfigManagerConnection connection = configManager.createConnection();
+        ConfigurationConnection connection = configManager.createConnection();
 
         Boolean isConfigServerReached = false;
         int authorizedAttempts = 5;
@@ -168,7 +168,7 @@ public class ConfigReader {
         input.close();
 
         
-        Properties p = ConfigManager.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
+        Properties p = Configuration.readCmdLineVariables(System.getProperty("sun.java.command").split(" "));
 
         if (p != null && p.size() > 0) {
             logger.debug("Adding properties from command line: " + p);

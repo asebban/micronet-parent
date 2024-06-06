@@ -14,17 +14,17 @@ import ma.micronet.commons.IListener;
 import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.PingListener;
 import ma.micronet.config.api.Config;
-import ma.micronet.config.api.ConfigManager;
-import ma.micronet.config.api.ConfigManagerFactory;
+import ma.micronet.config.api.Configuration;
+import ma.micronet.config.api.ConfigurationFactory;
 import ma.micronet.registry.api.Registry;
 import sun.misc.SignalHandler;
 import sun.misc.Signal;
 import java.net.URL;
 
-public class ConfigListener implements IListener {
+public class ConfigurationListener implements IListener {
 
-    private ConfigManager configManager;
-    private Logger logger = LoggerFactory.getLogger(ConfigListener.class);
+    private Configuration configuration;
+    private Logger logger = LoggerFactory.getLogger(ConfigurationListener.class);
     private Properties cmdLineProps = new Properties();
     private Properties properties;
 
@@ -40,10 +40,10 @@ public class ConfigListener implements IListener {
         }
 
         try {
-            this.configManager = ConfigManagerFactory.createConfigManager();
-            logger.debug("ConfigServerListener: Subscribing the config server " + configManager.getId() + " to the registry");
-            Registry.subscribe(this.configManager);
-            logger.debug("ConfigServerListener: ConfigServer " + configManager.getId() + "subscribed to the registry");
+            this.configuration = ConfigurationFactory.createConfigManager();
+            logger.debug("ConfigServerListener: Subscribing the config server " + configuration.getId() + " to the registry");
+            Registry.subscribe(this.configuration);
+            logger.debug("ConfigServerListener: ConfigServer " + configuration.getId() + "subscribed to the registry");
         } catch (MicroNetException | IOException e) {
             e.printStackTrace();
         }
@@ -56,7 +56,7 @@ public class ConfigListener implements IListener {
             public void handle(Signal signal) {
                 logger.debug("ConfigListener: Signal " + signal + " reçu. Arrêt en cours...");
                 try {
-                    Registry.unsubscribe(configManager);
+                    Registry.unsubscribe(configuration);
                 } catch (MicroNetException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -70,15 +70,15 @@ public class ConfigListener implements IListener {
         // Associate signal SIGINT to the handler
         Signal.handle(new Signal("INT"), handler);
 
-        new Thread(new PingListener(configManager)).start();
+        new Thread(new PingListener(configuration)).start();
 
-        try (ServerSocket serverSocket = new ServerSocket(configManager.getPort())) {
-            logger.info("ConfigServerListener: Server is listening on port " + configManager.getPort());
+        try (ServerSocket serverSocket = new ServerSocket(configuration.getPort())) {
+            logger.info("ConfigServerListener: Server is listening on port " + configuration.getPort());
 
             while (true) {
                 Socket socket = serverSocket.accept();
                 logger.debug("ConfigServerListener: New client connected");
-                new Thread(new ConfigServerHandler(socket, configManager, properties)).start();
+                new Thread(new ConfigurationHandler(socket, configuration, properties)).start();
             }
         } catch (IOException e) {
             logger.error("ConfigServerListener: Error while creating the server socket. Exiting..." + e.getMessage());
@@ -122,7 +122,7 @@ public class ConfigListener implements IListener {
 
         properties.putAll(p);
         
-        for (String arg : ConfigServer.cmdLineArgs) {
+        for (String arg : ConfigurationServer.cmdLineArgs) {
             String[] parts = arg.split("=");
             if (parts.length == 2) {
                 cmdLineProps.setProperty(parts[0], parts[1]);

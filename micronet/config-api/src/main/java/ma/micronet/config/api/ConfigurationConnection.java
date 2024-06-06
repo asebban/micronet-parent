@@ -10,11 +10,11 @@ import ma.micronet.commons.MicroNetException;
 import ma.micronet.commons.networking.Connection;
 import ma.micronet.commons.networking.MicroNetSocket;
 
-public class ConfigManagerConnection extends  Connection {
+public class ConfigurationConnection extends  Connection {
 
-    private Logger logger = LoggerFactory.getLogger(ConfigManagerConnection.class);
+    private Logger logger = LoggerFactory.getLogger(ConfigurationConnection.class);
     
-    public ConfigManagerConnection(Adressable adressable) throws MicroNetException, IOException {
+    public ConfigurationConnection(Adressable adressable) throws MicroNetException, IOException {
         super(adressable);
     }
 
@@ -24,8 +24,8 @@ public class ConfigManagerConnection extends  Connection {
             this.setSocket(new MicroNetSocket(this.getAdressable()));
             this.getSocket().connect();
         } catch (IOException e) {
-            logger.error("Gateway Connection: Gateway is not reachable", e);
-            throw new MicroNetException("Gateway Connection: Gateway is not reachable", e); // Throw a MicroNetException if the connection fails
+            logger.error("Configuration Connection: Registry Server is not reachable", e);
+            throw new MicroNetException("Configuration Connection: Registry Server is not reachable", e); // Throw a MicroNetException if the connection fails
         }
     }
 
