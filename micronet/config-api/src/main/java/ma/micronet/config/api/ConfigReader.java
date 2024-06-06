@@ -86,8 +86,6 @@ public class ConfigReader {
 
         // Finally, get properties from config server (the most prioritary source)
         ConfigManager configManager = new ConfigManager();
-        configManager.setHost(Config.getInstance().getProperty("registry.host") == null ? "localhost" : Config.getInstance().getProperty("registry.host"));
-        configManager.setPort(Config.getInstance().getProperty("registry.port") == null ? 10000: Integer.parseInt(Config.getInstance().getProperty("registry.port")));
         Message request = new Message();
         
         request.setCommand(Message.GET_CONFIG_COMMAND);
@@ -98,15 +96,17 @@ public class ConfigReader {
         ConfigManagerConnection connection = configManager.createConnection();
 
         Boolean isConfigServerReached = false;
+        int authorizedAttempts = 5;
         Message response = null;
         Long reconnectInterval=(properties.get("config.reconnect.interval") != null ? Long.parseLong((String)properties.get("config.reconnect.interval")) : 5L);
 
-        while(!isConfigServerReached) {
+        while(!isConfigServerReached && authorizedAttempts > 0) {
             try {
                 connection.connect();
                 response = connection.sendSync(request);
                 isConfigServerReached = true;
             } catch (MicroNetException e) {
+                authorizedAttempts--;
                 logger.error("ConfigReader: Error while connecting to the config server: " + e.getMessage() + ". Retrying...");
                 try {
                     Thread.sleep(reconnectInterval*1000);
@@ -114,6 +114,11 @@ public class ConfigReader {
                     e1.printStackTrace();
                 }
             }
+        }
+
+        if (authorizedAttempts == 0) {
+            logger.error("ConfigReader: number of attempts exhausted while connecting to the config server. Using local properties only.");
+            return;
         }
 
         if (response != null && response.getResponseCode().equals(Message.OK)) {

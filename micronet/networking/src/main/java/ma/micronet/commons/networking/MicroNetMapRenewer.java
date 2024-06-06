@@ -1,6 +1,7 @@
 package ma.micronet.commons.networking;
 
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -34,8 +35,8 @@ public class MicroNetMapRenewer {
     private ScheduledExecutorService executor;
     private Logger logger = LoggerFactory.getLogger(MicroNetMapRenewer.class);
     private Adressable adressable;
-    public static final String AGENT_TYPE = "AGENT";
-    public static final String MAP_RENEWER_TYPE = "MAP_RENEWER";
+    private String registryHost;
+    private int registryPort;
 
     private MicroNetMapRenewer(Adressable adressable) {
 
@@ -66,7 +67,9 @@ public class MicroNetMapRenewer {
 
         Socket registrySocket = null;
 
-        if (adressable.getHost() == null || adressable.getPort() == 0) {
+        readRegistryConfig();
+
+        if (registryHost == null || registryPort == 0) {
             logger.error("Registry host or port not set in the configuration file");
             throw new MicroNetException("Registry host or port not set in the configuration file"); // Throw a MicroNetException if the host or port is not set
         }
@@ -77,10 +80,10 @@ public class MicroNetMapRenewer {
         String json = gson.toJson(m);
 
         try {
-            registrySocket = new Socket(adressable.getHost(), adressable.getPort()); // Connect to the Registry
+            registrySocket = new Socket(registryHost, registryPort); // Connect to the Registry
         } catch (IOException e) {
-            logger.error(adressable.getHost() + ":" + adressable.getPort() + " is not reachable");
-            throw new MicroNetException(adressable.getHost() + ":" + adressable.getPort() + " is not reachable", e); // Throw a MicroNetException if the connection fails
+            logger.error(registryHost + ":" + registryPort + " is not reachable");
+            throw new MicroNetException(registryHost + ":" + registryPort + " is not reachable", e); // Throw a MicroNetException if the connection fails
         }
 
         InputStream is = registrySocket.getInputStream();
@@ -138,7 +141,7 @@ public class MicroNetMapRenewer {
         }
 
         // prepare agents map for routers
-        List<Adressable> agents = this.map.get(AGENT_TYPE);
+        List<Adressable> agents = this.map.get(Message.AGENT_TYPE);
         // Map indexed by path
         this.agentsMap = prepareAgentsMap(agents);
         return this.map;
@@ -198,5 +201,27 @@ public class MicroNetMapRenewer {
         m.setDirection(Message.REQUEST);
         m.setCommand(Message.REGISTRY_GETMAP_COMMAND);
         return m;
+    }
+
+    private void readRegistryConfig() throws MicroNetException, IOException {
+        Properties props = new Properties();
+        InputStream is = MicroNetMapRenewer.class.getClassLoader().getResourceAsStream("application.properties");
+        if (is == null) {
+            logger.error("application.properties file not found in the classpath. Unable to know the registry host and port");
+            throw new MicroNetException("application.properties file not found in the classpath. Unable to know the registry host and port");
+        }
+        props.load(is);
+        this.registryHost = props.getProperty("registry.host");
+        if (this.registryHost == null) {
+            logger.error("registry.host property not found in application.properties file. Unable to know the registry host");
+            throw new MicroNetException("registry.host property not found in application.properties file. Unable to know the registry host");
+        }
+        try {
+            this.registryPort = Integer.parseInt(props.getProperty("registry.port"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw new MicroNetException("registry.port property not found in application.properties file or not a number. Unable to know the registry port", e);
+        }
+
     }
 }
