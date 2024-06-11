@@ -26,7 +26,6 @@ public class MicroNetSocket {
     public static Integer DEFAULT_REST_FREQUENCY = 3;
 
     private Socket socket;
-    private String type;
     public static final String AGENT_TYPE = "AGENT";
     private Logger logger = LoggerFactory.getLogger(MicroNetSocket.class.getName());
     private Adressable adressable;
@@ -156,8 +155,8 @@ public class MicroNetSocket {
         }
         
         if (adressablesSize <= 0) {
-            logger.error("MicroNetSocket.send: No reachable adressable found for type " + this.type);
-            throw new MicroNetException("No reachable adressable found for type " + this.type);
+            logger.error("MicroNetSocket.send: No reachable adressable found for type " + this.adressable == null ? "requested" : this.adressable.getType());
+            throw new MicroNetException("No reachable adressable found for type " + this.adressable == null ? "requested" : this.adressable.getType());
         }
 
         return adressable;

@@ -140,11 +140,11 @@ public class MicroNetMapRenewer {
         // convert the response to a Message object using Gson
         try {
             response = response.trim();
-            logger.debug("Response received from registry: " + response);
+            logger.debug("MicroNetMapRenewer.renewMap: Response received from registry: " + response);
             Message registryMessage = gson.fromJson(response, Message.class);
             String payLoad = registryMessage.getPayLoad();
             payLoad = payLoad.trim();
-            logger.debug("Payload received from registry: " + payLoad);
+            logger.debug("MicroNetMapRenewer.renewMap: Payload received from registry: " + payLoad);
             Type mapType = new TypeToken<Map<String, List<Adressable>>>() {}.getType();
             this.map = gson.fromJson(payLoad, mapType);
         } catch (JsonSyntaxException e) {
@@ -172,7 +172,7 @@ public class MicroNetMapRenewer {
         Map<String, List<Adressable>> nm = new HashMap<>();
         for(Adressable agent : agents) {
             String path = agent.getPath();
-            logger.debug("MapRenewer: Adding agent " + agent + " to the agents map");
+            logger.debug("MicroNetMapRenewer.prepareAgentsMap: Adding agent " + agent + " to the agents map");
             if (nm.get(path) == null) {
                 nm.put(path, new ArrayList<>());
             }

@@ -50,8 +50,12 @@ public class RouterProcessor implements Runnable {
             logger.error("Router Processor: Error processing the request: " + e.getMessage());
             e.printStackTrace();
         } catch (MicroNetException e) {
-            logger.error("Router Processor: Error processing the request: " + e.getMessage());
-            e.printStackTrace();
+            try {
+                this.socket.getOutputStream().write(Message.errorMessage("Router Processor: Error processing the request: " + e.getMessage()).toString().getBytes());
+            } catch (IOException e1) {
+                logger.error("Router Processor: Error processing the request: " + e.getMessage());
+                e1.printStackTrace();
+            }
         } finally {
             try {
                 this.socket.close();

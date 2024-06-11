@@ -38,10 +38,10 @@ public abstract class Connection {
         try {
             logger.debug("Connection.send: Sending message " + message.toString());
             this.socket.send(json);
-            logger.debug("Message sent: " + message.toString());
+            logger.debug("Connection.send: Message sent: " + message.toString());
         } catch (MicroNetException e) {
             e.printStackTrace();
-            throw new MicroNetException("Error sending message", e);
+            throw e;
         } catch (IOException e) {
             e.printStackTrace();
             throw new MicroNetException("Error sending message", e);
@@ -53,9 +53,6 @@ public abstract class Connection {
         String json = message.toString();
         try {
             this.socket.send(json);
-        } catch (MicroNetException e) {
-            e.printStackTrace();
-            throw new MicroNetException("Error sending message", e);
         } catch (IOException e) {
             e.printStackTrace();
             throw new MicroNetException("Error sending message", e);
@@ -74,7 +71,7 @@ public abstract class Connection {
             logger.debug("Connection.receive: Received message: " + json);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new MicroNetException("Network error receiving message", e);
+            throw new MicroNetException(e);
         }
 
         Gson gson = new Gson();

@@ -81,7 +81,11 @@ public class Adressable {
 
     @Override
     public String toString() {
-        return "Adressable [id=" + id + ", type=" + type + ", path=" + path + ", port=" + port + ", host=" + host + "]";
+        String toString = (type != null ? type : "");
+        toString += (path != null ? "&path=" + path : "");
+        toString += (host != null ? "@" + host : "");
+        toString += (port != null ? ":"+port.intValue() : "");
+        return "[" + toString + "]";
     }
     
     @Override

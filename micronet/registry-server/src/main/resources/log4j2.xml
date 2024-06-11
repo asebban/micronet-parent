@@ -5,6 +5,19 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
         </Console>
         <File name="FileLogger" fileName="./registry.log">
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="NEUTRAL" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*MicroNetMapRenewer.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Received ping request.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Ping response sent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Checking liveness.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*is alive.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*RegistryHandler.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Ping response is OK.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Ping response received.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Ping request sent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Sending ping request to.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
             </PatternLayout>

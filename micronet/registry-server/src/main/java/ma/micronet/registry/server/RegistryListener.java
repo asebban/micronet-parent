@@ -49,7 +49,7 @@ public class RegistryListener implements IListener {
         SignalHandler handler = new SignalHandler() {
             @Override
             public void handle(Signal signal) {
-                logger.debug("Router Listener: Signal " + signal + " reçu. Arrêt en cours...");
+                logger.debug("Registry Listener: Signal " + signal + " received. Stopping...");
                 System.exit(0);
             }
         };

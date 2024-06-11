@@ -45,7 +45,7 @@ public class RegistryHandler implements Runnable {
             os.write(responseJson.getBytes());
             os.flush();
         } catch (IOException e) {
-            logger.error("RegistryHandler: Error getting input stream: " + e.getMessage());
+            logger.error("RegistryHandler: Error : " + e.getMessage());
             e.printStackTrace();
         }
         finally {

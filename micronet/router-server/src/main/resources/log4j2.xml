@@ -5,6 +5,11 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
         </Console>
         <File name="FileLogger" fileName="./router.log">
+            <Filters>
+                <RegexFilter regex=".*MicroNetMapRenewer.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Received ping request.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*Ping response sent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
             </PatternLayout>
