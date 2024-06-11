@@ -45,7 +45,7 @@ public class PropertiesReader {
             p.load(input);
             properties.putAll(p);
         } catch (MalformedURLException e) {
-            logger.error("ConfigReader: Error while creating the URL object from config source: " + e.getMessage() + ". May be the config source is not declared or not well formed. Using properties in the application.properties file ...");
+            logger.debug("ConfigReader: May be the config source is not declared or not well formed. Using properties in the application.properties file ...");
         }
         input.close();
         

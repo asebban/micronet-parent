@@ -28,6 +28,7 @@ public class RegistryListener implements IListener {
 
     private Logger logger = LoggerFactory.getLogger(RegistryListener.class);
     private Map<Adressable, Integer> pingMap = new HashMap<>();
+    private Integer registryPingRetries = 3;
     
     @Override
     public void start() throws MicroNetException {
@@ -64,6 +65,13 @@ public class RegistryListener implements IListener {
         } catch (Exception e) {
             periodicity = 5;
         }
+
+        try {
+            registryPingRetries = Integer.parseInt(Config.getInstance().getProperty("registry.ping.retries"));
+        } catch (Exception e) {
+            registryPingRetries = 3;
+        }
+
         ScheduledExecutorService executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
             try {
@@ -98,7 +106,7 @@ public class RegistryListener implements IListener {
                 try {
                     if (!Pinger.ping(adressable)) {
                         Integer count = pingMap.get(adressable);
-                        if (count != null && count >= 3) {
+                        if (count != null && count >= registryPingRetries) {
                             logger.debug("Adressable type " + adressable.getType() + " -> " + adressable + " is dead. Removing it from the map ...");
                             deadAdressables.add(adressable);
                             pingMap.remove(adressable);

@@ -5,6 +5,7 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
         </Console>
         <File name="FileLogger" fileName="./httpgateway.log">
+            <RegexFilter regex=".*MicroNetMapRenewer.*" onMatch="DENY" onMismatch="NEUTRAL"/>
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
             </PatternLayout>

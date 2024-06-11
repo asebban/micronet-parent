@@ -17,6 +17,7 @@
                 <RegexFilter regex=".*Ping response received.*" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <RegexFilter regex=".*Ping request sent.*" onMatch="DENY" onMismatch="NEUTRAL"/>
                 <RegexFilter regex=".*Sending ping request to.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <RegexFilter regex=".*RegistryListener: New connection accepted.*" onMatch="DENY" onMismatch="NEUTRAL"/>
             </Filters>
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
