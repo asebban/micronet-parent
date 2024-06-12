@@ -14,6 +14,10 @@ public abstract class ProcessingUnit implements IProcessingUnit {
     public abstract Message execute(Message message) throws MicroNetException;
 
     public abstract String registerRelativePath();
+    public abstract Message add(Message message) throws MicroNetException;
+    public abstract Message update(Message message) throws MicroNetException;
+    public abstract Message delete(Message message) throws MicroNetException;
+    public abstract Message get(Message message) throws MicroNetException;
 
     public Message callAgent(Message request, String command, String path, String payload ) throws MicroNetException, IOException {
 

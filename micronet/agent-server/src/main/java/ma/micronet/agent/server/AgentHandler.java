@@ -12,10 +12,12 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import ma.micronet.agent.api.AgentProcessorFactory;
 import ma.micronet.agent.api.IAgentProcessor;
 import ma.micronet.agent.api.IProcessingUnit;
 import ma.micronet.commons.Message;
+import ma.micronet.commons.MicroNetException;
 
 public class AgentHandler implements Runnable {
 
@@ -62,7 +64,7 @@ public class AgentHandler implements Runnable {
                     Map<String, String> queryParameters = extractQueryParameters(messagePath);
                     preProcessedMessage.getParameters().putAll(queryParameters);
                     String messageID = preProcessedMessage.getMessageId();
-                    responseMessage = processingUnit.execute(preProcessedMessage);
+                    responseMessage = dispatch(processingUnit, preProcessedMessage);
                     responseMessage.setMessageId(messageID); // restore the original message ID if it was modified
                     break;
                 }
@@ -178,6 +180,33 @@ public class AgentHandler implements Runnable {
 
         // Check if the entire URL matches the pattern
         return matcher.matches();
+    }
+
+    private Message dispatch(IProcessingUnit processingUnit, Message message) throws MicroNetException {
+        
+        Message response = Message.copy(message);
+        response.setDirection(Message.RESPONSE);
+
+        switch(message.getCommand()) {
+            case Message.GET:
+                response = processingUnit.get(message);
+                break;
+            case Message.ADD:
+                response = processingUnit.add(message);
+                break;
+            case Message.UPDATE:
+                response = processingUnit.update(message);
+                break;
+            case Message.DELETE:
+                response = processingUnit.delete(message);
+                break;
+            default:
+                logger.debug("AgentHandler.dispatch: Unknown command: " + message.getCommand());
+                response = processingUnit.execute(message);
+                return response;
+        }
+
+        return response;
     }
 
 }

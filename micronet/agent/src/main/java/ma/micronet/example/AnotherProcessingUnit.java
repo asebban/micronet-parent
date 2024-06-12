@@ -28,4 +28,28 @@ public class AnotherProcessingUnit implements IProcessingUnit {
         return "/another/{id}";
     }
 
+    @Override
+    public Message add(Message arg0) throws MicroNetException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'add'");
+    }
+
+    @Override
+    public Message delete(Message arg0) throws MicroNetException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    }
+
+    @Override
+    public Message get(Message arg0) throws MicroNetException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'get'");
+    }
+
+    @Override
+    public Message update(Message arg0) throws MicroNetException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    }
+
 }
