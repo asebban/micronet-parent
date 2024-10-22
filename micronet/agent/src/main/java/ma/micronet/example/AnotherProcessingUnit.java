@@ -41,9 +41,20 @@ public class AnotherProcessingUnit implements IProcessingUnit {
     }
 
     @Override
-    public Message get(Message arg0) throws MicroNetException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'get'");
+    public Message get(Message message) throws MicroNetException {
+        Message response = Message.copy(message);
+        response.setDirection(Message.RESPONSE);
+        String payload = "This is my ANOTHER processing unit response";
+        if (message.getParameters() != null) {
+            // loop on the map keys and values
+            for (String key : message.getParameters().keySet()) {
+                payload += " " + key + " = " + message.getParameters().get(key);
+            }
+        }
+        payload += " verb = " + message.getCommand();
+        response.setPayLoad(payload);
+        response.setResponseCode(Message.OK);
+        return response;    
     }
 
     @Override

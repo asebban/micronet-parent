@@ -72,6 +72,7 @@ public class RegistryListener implements IListener {
             registryPingRetries = 3;
         }
 
+        // Create a scheduled executor service for checking liveness of adressables (Gateway, Router, ...)
         ScheduledExecutorService executor  = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
             try {
